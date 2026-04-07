@@ -1,0 +1,344 @@
+{
+  "chains": [
+    "lidl",
+    "netto",
+    "rema 1000",
+    "brugsen",
+    "superbrugsen",
+    "kvickly",
+    "365discount",
+    "foetex",
+    "meny",
+    "bilka"
+  ],
+  "queries": [
+    "hakket oksekød",
+    "hakket svinekød",
+    "hakket kalv og flæsk",
+    "broccoli",
+    "blomkål",
+    "hvidkål",
+    "rødkål",
+    "piskefløde",
+    "creme fraiche",
+    "skyr"
+  ],
+  "rows": [
+    {
+      "query": "hakket oksekød",
+      "family": "minced-beef",
+      "familyLabel": "Hakket oksekød",
+      "direct": {
+        "count": 6,
+        "chains": [
+          "foetex",
+          "lidl",
+          "meny",
+          "netto",
+          "rema 1000"
+        ],
+        "samples": [
+          {
+            "chain": "lidl",
+            "productName": "MADVÆRKET Hakket oksekød",
+            "comparisonGroup": null,
+            "sizeText": null,
+            "price": 29.0
+          },
+          {
+            "chain": "netto",
+            "productName": "Velsmag hakket oksekød 14-18%",
+            "comparisonGroup": null,
+            "sizeText": "400 g",
+            "price": 39
+          },
+          {
+            "chain": "netto",
+            "productName": "ØGO økologisk hakket oksekød 14-18%",
+            "comparisonGroup": null,
+            "sizeText": "300 g",
+            "price": 39
+          },
+          {
+            "chain": "rema 1000",
+            "productName": "Hakket dansk oksekød 4-7%",
+            "comparisonGroup": null,
+            "sizeText": "350 g",
+            "price": 35
+          },
+          {
+            "chain": "foetex",
+            "productName": "Hakket oksekød",
+            "comparisonGroup": null,
+            "sizeText": "700 g",
+            "price": 75
+          }
+        ]
+      },
+      "fallback": {
+        "count": 0,
+        "chains": [],
+        "samples": []
+      },
+      "directError": null,
+      "fallbackError": null
+    },
+    {
+      "query": "hakket svinekød",
+      "family": "minced-pork",
+      "familyLabel": "Hakket svinekød",
+      "direct": {
+        "count": 4,
+        "chains": [
+          "brugsen",
+          "foetex",
+          "lidl",
+          "rema 1000"
+        ],
+        "samples": [
+          {
+            "chain": "lidl",
+            "productName": "MADVÆRKET/GB MEATGROUP Hakket gris og kalv eller grisekæber",
+            "comparisonGroup": null,
+            "sizeText": null,
+            "price": 49.0
+          },
+          {
+            "chain": "rema 1000",
+            "productName": "Hakket dansk grisekød eller kyllingekød",
+            "comparisonGroup": null,
+            "sizeText": "400-500 g",
+            "price": 20
+          },
+          {
+            "chain": "brugsen",
+            "productName": "Kyllingefilet, -inderfilet eller hakket okse/gris 8-12%",
+            "comparisonGroup": null,
+            "sizeText": "800-900 g",
+            "price": 69
+          },
+          {
+            "chain": "foetex",
+            "productName": "Hakket grisekød eller grise-/kalvekød",
+            "comparisonGroup": null,
+            "sizeText": "800-900 g",
+            "price": 49
+          }
+        ]
+      },
+      "fallback": {
+        "count": 0,
+        "chains": [],
+        "samples": []
+      },
+      "directError": null,
+      "fallbackError": null
+    },
+    {
+      "query": "hakket kalv og flæsk",
+      "family": "minced-veal-pork",
+      "familyLabel": "Hakket kalv og flæsk",
+      "direct": {
+        "count": 1,
+        "chains": [
+          "foetex"
+        ],
+        "samples": [
+          {
+            "chain": "foetex",
+            "productName": "Hakket grise-/kalvekød",
+            "comparisonGroup": null,
+            "sizeText": "800-900 g",
+            "price": 49
+          }
+        ]
+      },
+      "fallback": {
+        "count": 0,
+        "chains": [],
+        "samples": []
+      },
+      "directError": null,
+      "fallbackError": null
+    },
+    {
+      "query": "broccoli",
+      "family": "broccoli",
+      "familyLabel": "Broccoli",
+      "direct": {
+        "count": 1,
+        "chains": [
+          "superbrugsen"
+        ],
+        "samples": [
+          {
+            "chain": "superbrugsen",
+            "productName": "Broccoli",
+            "comparisonGroup": null,
+            "sizeText": "500 g",
+            "price": 10
+          }
+        ]
+      },
+      "fallback": {
+        "count": 0,
+        "chains": [],
+        "samples": []
+      },
+      "directError": null,
+      "fallbackError": null
+    },
+    {
+      "query": "blomkål",
+      "family": "cauliflower",
+      "familyLabel": "Blomkål",
+      "direct": {
+        "count": 0,
+        "chains": [],
+        "samples": []
+      },
+      "fallback": {
+        "count": 0,
+        "chains": [],
+        "samples": []
+      },
+      "directError": null,
+      "fallbackError": null
+    },
+    {
+      "query": "hvidkål",
+      "family": "white-cabbage",
+      "familyLabel": "Hvidkål",
+      "direct": {
+        "count": 1,
+        "chains": [
+          "lidl"
+        ],
+        "samples": [
+          {
+            "chain": "lidl",
+            "productName": "KULJANKA Hvidkålssalat",
+            "comparisonGroup": null,
+            "sizeText": null,
+            "price": 12.0
+          }
+        ]
+      },
+      "fallback": {
+        "count": 0,
+        "chains": [],
+        "samples": []
+      },
+      "directError": null,
+      "fallbackError": null
+    },
+    {
+      "query": "rødkål",
+      "family": "red-cabbage",
+      "familyLabel": "Rødkål",
+      "direct": {
+        "count": 0,
+        "chains": [],
+        "samples": []
+      },
+      "fallback": {
+        "count": 0,
+        "chains": [],
+        "samples": []
+      },
+      "directError": null,
+      "fallbackError": null
+    },
+    {
+      "query": "piskefløde",
+      "family": "heavy-cream",
+      "familyLabel": "Piskefløde",
+      "direct": {
+        "count": 0,
+        "chains": [],
+        "samples": []
+      },
+      "fallback": {
+        "count": 0,
+        "chains": [],
+        "samples": []
+      },
+      "directError": null,
+      "fallbackError": null
+    },
+    {
+      "query": "creme fraiche",
+      "family": "creme-fraiche",
+      "familyLabel": "Crème fraîche",
+      "direct": {
+        "count": 0,
+        "chains": [],
+        "samples": []
+      },
+      "fallback": {
+        "count": 0,
+        "chains": [],
+        "samples": []
+      },
+      "directError": null,
+      "fallbackError": null
+    },
+    {
+      "query": "skyr",
+      "family": "skyr",
+      "familyLabel": "Skyr",
+      "direct": {
+        "count": 7,
+        "chains": [
+          "365discount",
+          "lidl",
+          "superbrugsen"
+        ],
+        "samples": [
+          {
+            "chain": "lidl",
+            "productName": "CHEASY Skyr",
+            "comparisonGroup": null,
+            "sizeText": null,
+            "price": 20.0
+          },
+          {
+            "chain": "superbrugsen",
+            "productName": "Thise økologisk skyr",
+            "comparisonGroup": null,
+            "sizeText": "1 kg",
+            "price": 26
+          },
+          {
+            "chain": "superbrugsen",
+            "productName": "Stay Strong skyr",
+            "comparisonGroup": null,
+            "sizeText": "500 g",
+            "price": 16
+          },
+          {
+            "chain": "superbrugsen",
+            "productName": "Thise økologisk skyr pouch",
+            "comparisonGroup": null,
+            "sizeText": "140 g",
+            "price": 10
+          },
+          {
+            "chain": "superbrugsen",
+            "productName": "Thise økologisk skyr pouch",
+            "comparisonGroup": null,
+            "sizeText": "140 g",
+            "price": 10
+          }
+        ]
+      },
+      "fallback": {
+        "count": 0,
+        "chains": [],
+        "samples": []
+      },
+      "directError": null,
+      "fallbackError": null
+    }
+  ]
+}
