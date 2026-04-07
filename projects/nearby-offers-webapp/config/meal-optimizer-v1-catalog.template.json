@@ -1,0 +1,176 @@
+{
+  "version": 1,
+  "status": "draft",
+  "notes": [
+    "This draft reflects Jesper's current locked normalization direction.",
+    "Fresh/frozen and whole/chopped are normalization attributes on offers, not separate ingredient families.",
+    "Recipe slots reference interchangeable ingredient families and allow future per-family quantity overrides.",
+    "For V1, grams and ml are treated as interchangeable 1:1 units wherever a conversion is needed."
+  ],
+  "ingredientFamilies": [
+    {
+      "id": "minced-beef",
+      "category": "meat",
+      "displayName": "Hakket oksekød",
+      "searchTerms": ["hakket oksekød"]
+    },
+    {
+      "id": "minced-pork",
+      "category": "meat",
+      "displayName": "Hakket svinekød",
+      "searchTerms": ["hakket svinekød"]
+    },
+    {
+      "id": "minced-veal-pork",
+      "category": "meat",
+      "displayName": "Hakket kalv og flæsk",
+      "searchTerms": ["hakket kalv og flæsk", "hakket kalv/flæsk"]
+    },
+    {
+      "id": "broccoli",
+      "category": "vegetable",
+      "displayName": "Broccoli",
+      "searchTerms": ["broccoli", "broccoli buketter", "broccolibuketter"]
+    },
+    {
+      "id": "cauliflower",
+      "category": "vegetable",
+      "displayName": "Blomkål",
+      "searchTerms": ["blomkål", "blomkålsbuketter"]
+    },
+    {
+      "id": "white-cabbage",
+      "category": "vegetable",
+      "displayName": "Hvidkål",
+      "searchTerms": ["hvidkål"]
+    },
+    {
+      "id": "red-cabbage",
+      "category": "vegetable",
+      "displayName": "Rødkål",
+      "searchTerms": ["rødkål", "roedkaal"]
+    },
+    {
+      "id": "heavy-cream",
+      "category": "dairy",
+      "displayName": "Piskefløde",
+      "searchTerms": ["piskefløde", "floede", "fløde"]
+    },
+    {
+      "id": "creme-fraiche",
+      "category": "dairy",
+      "displayName": "Crème fraîche",
+      "searchTerms": ["creme fraiche", "crème fraîche"]
+    },
+    {
+      "id": "skyr",
+      "category": "dairy",
+      "displayName": "Skyr",
+      "searchTerms": ["skyr"]
+    }
+  ],
+  "offerNormalizationAttributes": {
+    "temperatureState": ["fresh", "frozen"],
+    "cutState": ["whole", "chopped"],
+    "cabbageVariant": ["white", "red"]
+  },
+  "unitConversionRules": [
+    {
+      "ingredientFamilyId": "minced-beef",
+      "baseUnit": "g"
+    },
+    {
+      "ingredientFamilyId": "minced-pork",
+      "baseUnit": "g"
+    },
+    {
+      "ingredientFamilyId": "minced-veal-pork",
+      "baseUnit": "g"
+    },
+    {
+      "ingredientFamilyId": "broccoli",
+      "baseUnit": "g"
+    },
+    {
+      "ingredientFamilyId": "cauliflower",
+      "baseUnit": "g"
+    },
+    {
+      "ingredientFamilyId": "white-cabbage",
+      "baseUnit": "g"
+    },
+    {
+      "ingredientFamilyId": "red-cabbage",
+      "baseUnit": "g"
+    },
+    {
+      "ingredientFamilyId": "heavy-cream",
+      "baseUnit": "ml",
+      "gramsPerMl": 1.0,
+      "assumptionStatus": "locked-v1-1to1"
+    },
+    {
+      "ingredientFamilyId": "creme-fraiche",
+      "baseUnit": "g",
+      "gramsPerMl": 1.0,
+      "assumptionStatus": "locked-v1-1to1"
+    },
+    {
+      "ingredientFamilyId": "skyr",
+      "baseUnit": "g",
+      "gramsPerMl": 1.0,
+      "assumptionStatus": "locked-v1-1to1"
+    }
+  ],
+  "recipes": [
+    {
+      "id": "base-mince-veg-sauce",
+      "slug": "base-mince-veg-sauce",
+      "displayName": "Base mince + vegetable + sauce meal",
+      "quantityBasis": "perMeal",
+      "servingsPerBatch": 1,
+      "slots": [
+        {
+          "slotKey": "meat",
+          "role": "protein",
+          "quantity": { "value": 150, "unit": "g" },
+          "allowedFamilies": [
+            { "ingredientFamilyId": "minced-beef" },
+            { "ingredientFamilyId": "minced-pork" },
+            { "ingredientFamilyId": "minced-veal-pork" }
+          ]
+        },
+        {
+          "slotKey": "vegetable",
+          "role": "vegetable",
+          "quantity": { "value": 300, "unit": "g" },
+          "allowedFamilies": [
+            { "ingredientFamilyId": "broccoli" },
+            { "ingredientFamilyId": "cauliflower" },
+            { "ingredientFamilyId": "white-cabbage" },
+            { "ingredientFamilyId": "red-cabbage" }
+          ]
+        },
+        {
+          "slotKey": "dairy",
+          "role": "dairy",
+          "allowedFamilies": [
+            {
+              "ingredientFamilyId": "heavy-cream",
+              "quantityOverride": { "value": 0.5, "unit": "dl" }
+            },
+            {
+              "ingredientFamilyId": "skyr",
+              "quantityOverride": { "value": 1.0, "unit": "dl" }
+            },
+            {
+              "ingredientFamilyId": "creme-fraiche",
+              "quantityOverride": { "value": 1.0, "unit": "dl" }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+

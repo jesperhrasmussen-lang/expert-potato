@@ -1,0 +1,9 @@
+# Nearby Offers V1 refresh cadence
+# Install manually if desired, for example with: crontab -e
+# Runs the canonical DB refresh wrapper four times daily.
+
+0 7 * * * /data/.openclaw/workspace/scripts/run_nearby_offers_refresh.sh
+0 11 * * * /data/.openclaw/workspace/scripts/run_nearby_offers_refresh.sh
+0 15 * * * /data/.openclaw/workspace/scripts/run_nearby_offers_refresh.sh
+0 19 * * * /data/.openclaw/workspace/scripts/run_nearby_offers_refresh.sh
+
