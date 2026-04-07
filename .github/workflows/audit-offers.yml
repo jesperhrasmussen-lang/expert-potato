@@ -1,0 +1,25 @@
+name: Audit offer coverage
+
+on:
+  push:
+    branches: ["claude/**"]
+  workflow_dispatch:
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt 2>/dev/null || true
+
+      - name: Search broccoli offers
+        run: python3 scripts/etilbudsavis_collect.py "broccoli" --pretty
+
+      - name: Run full coverage audit
+        run: python3 scripts/audit_meal_ingredient_coverage_dk.py --pretty
