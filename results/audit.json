@@ -166,19 +166,9 @@
       "family": "broccoli",
       "familyLabel": "Broccoli",
       "direct": {
-        "count": 1,
-        "chains": [
-          "superbrugsen"
-        ],
-        "samples": [
-          {
-            "chain": "superbrugsen",
-            "productName": "Broccoli",
-            "comparisonGroup": null,
-            "sizeText": "500 g",
-            "price": 10
-          }
-        ]
+        "count": 0,
+        "chains": [],
+        "samples": []
       },
       "fallback": {
         "count": 0,
