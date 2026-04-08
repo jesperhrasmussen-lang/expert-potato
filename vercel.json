@@ -1,6 +1,12 @@
 {
-  "buildCommand": "cd projects/nearby-offers-webapp/web && npm install && npm run build",
-  "outputDirectory": "projects/nearby-offers-webapp/web/.next",
-  "framework": "nextjs",
-  "installCommand": "cd projects/nearby-offers-webapp/web && npm install"
+  "version": 2,
+  "builds": [
+    {
+      "src": "projects/nearby-offers-webapp/web/package.json",
+      "use": "@vercel/next",
+      "config": {
+        "rootDirectory": "projects/nearby-offers-webapp/web"
+      }
+    }
+  ]
 }
