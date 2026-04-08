@@ -275,22 +275,36 @@ def collect_meny(query: str) -> List[Dict[str, Any]]:
     return results
 
 
-def current_lidl_identifier() -> Optional[str]:
+def all_lidl_identifiers() -> List[str]:
     html = fetch_text('https://www.lidl.dk/c/tilbudsavis/s10013730')
-    m = re.search(r'https://www\.lidl\.dk/l/da/tilbudsavis/([^/\?"\']+)', html)
-    return m.group(1) if m else None
+    all_ids = re.findall(r'https://www\.lidl\.dk/l/da/tilbudsavis/([^/\?\"\'\s]+)', html)
+    # Deduplicate while preserving order, skip nonfood flyers
+    seen = set()
+    result = []
+    for fid in all_ids:
+        if fid not in seen and 'nonfood' not in fid:
+            seen.add(fid)
+            result.append(fid)
+    return result
 
 
 def collect_lidl(query: str) -> List[Dict[str, Any]]:
-    flyer_id = current_lidl_identifier()
-    if not flyer_id:
+    flyer_ids = all_lidl_identifiers()
+    if not flyer_ids:
         return []
-    data = fetch_json(f'https://endpoints.leaflets.schwarz/v4/flyer?flyer_identifier={flyer_id}&region_id=0&region_code=0')
-    flyer = data.get('flyer') or {}
-    products = (flyer.get('products') or {}).values()
+    products = {}
+    for flyer_id in flyer_ids:
+        try:
+            data = fetch_json(f'https://endpoints.leaflets.schwarz/v4/flyer?flyer_identifier={flyer_id}&region_id=0&region_code=0')
+            flyer = data.get('flyer') or {}
+            for pid, product in (flyer.get('products') or {}).items():
+                if pid not in products:
+                    products[pid] = product
+        except Exception:
+            continue
     query_family = query_to_family(query)
     out = []
-    for product in products:
+    for product in products.values():
         text = f"{product.get('title','')} {product.get('description','')}"
         if not text_matches_family(text, query_family) if query_family else False:
             continue
