@@ -14,8 +14,13 @@ interface StoredPrefs {
 }
 
 interface AddressSuggestion {
-  display_name: string;
-  place_id: number;
+  tekst: string;
+  adresse: {
+    vejnavn: string;
+    husnr: string;
+    postnr: string;
+    postnrnavn: string;
+  };
 }
 
 function loadPrefs(): StoredPrefs | null {
@@ -67,17 +72,12 @@ function useAddressAutocomplete() {
       try {
         const params = new URLSearchParams({
           q: query,
-          format: 'json',
-          addressdetails: '1',
-          limit: '5',
-          countrycodes: 'dk',
+          per_side: '6',
+          fuzzy: '',
         });
         const res = await fetch(
-          `https://nominatim.openstreetmap.org/search?${params}`,
-          {
-            signal: controller.signal,
-            headers: { 'Accept-Language': 'da' },
-          },
+          `https://api.dataforsyningen.dk/adresser/autocomplete?${params}`,
+          { signal: controller.signal },
         );
         if (!res.ok) return;
         const data = (await res.json()) as AddressSuggestion[];
@@ -86,7 +86,7 @@ function useAddressAutocomplete() {
       } catch {
         // aborted or network error
       }
-    }, 300);
+    }, 200);
   }, []);
 
   const clearSuggestions = useCallback(() => {
@@ -147,7 +147,7 @@ export function MealSearchForm() {
   }
 
   function onSelectSuggestion(suggestion: AddressSuggestion) {
-    setAddress(suggestion.display_name);
+    setAddress(suggestion.tekst);
     clearSuggestions();
   }
 
@@ -213,14 +213,14 @@ export function MealSearchForm() {
           />
           {showSuggestions && (
             <ul className="autocomplete-list">
-              {suggestions.map((s) => (
-                <li key={s.place_id}>
+              {suggestions.map((s, i) => (
+                <li key={`${s.tekst}-${i}`}>
                   <button
                     type="button"
                     className="autocomplete-item"
                     onClick={() => onSelectSuggestion(s)}
                   >
-                    {s.display_name}
+                    {s.tekst}
                   </button>
                 </li>
               ))}
