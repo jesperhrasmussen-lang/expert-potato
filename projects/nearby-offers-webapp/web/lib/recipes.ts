@@ -23,12 +23,6 @@ export interface Recipe {
   steps: string[];
 }
 
-// Nutrition per serving. Fat includes fat from meat.
-// Kylling 23g protein/100g, 1g fat/100g
-// Oksekød 14%: 19g protein/100g, 14g fat/100g
-// Svinekød 10%: 17g protein/100g, 10g fat/100g
-// Kalv/flæsk: 16g protein/100g, 12g fat/100g
-
 export const RECIPES: Recipe[] = [
   {
     meatFamily: 'chicken-fillet',
@@ -36,11 +30,11 @@ export const RECIPES: Recipe[] = [
     subtitle: 'Broccoli, hvidløg og flødesauce · 2 personer',
     time: '20 min',
     servings: 2,
-    nutrition: { kj: 2800, fat: 16, carbs: 84, protein: 46, fiber: 3 },
+    nutrition: { kj: 2580, fat: 16, carbs: 72, protein: 45, fiber: 5 },
     ingredients: [
       { name: 'Kyllingekød', quantity: '250g', note: 'tilbud' },
-      { name: 'Pasta', quantity: '200g', note: 'penne eller fusilli' },
-      { name: 'Broccoli', quantity: '200g', note: 'i små buketter' },
+      { name: 'Pasta', quantity: '150g', note: 'penne eller fusilli' },
+      { name: 'Broccoli', quantity: '400g', note: 'i små buketter' },
       { name: 'Fløde', quantity: '1 dl' },
       { name: 'Hvidløg', quantity: '2 fed', note: 'hakket' },
       { name: 'Salt og peber', quantity: 'efter smag' },
@@ -60,11 +54,11 @@ export const RECIPES: Recipe[] = [
     subtitle: 'Spidskål, soja og honning · 2 personer',
     time: '15 min',
     servings: 2,
-    nutrition: { kj: 3030, fat: 25, carbs: 86, protein: 38, fiber: 2 },
+    nutrition: { kj: 2800, fat: 25, carbs: 72, protein: 38, fiber: 4 },
     ingredients: [
       { name: 'Hakket svinekød', quantity: '350g', note: 'tilbud' },
-      { name: 'Ris', quantity: '200g' },
-      { name: 'Spidskål', quantity: '200g', note: 'i strimler' },
+      { name: 'Ris', quantity: '150g' },
+      { name: 'Spidskål', quantity: '400g', note: 'i strimler' },
       { name: 'Soja', quantity: '2 spsk' },
       { name: 'Honning', quantity: '1 spsk' },
       { name: 'Hvidløg', quantity: '2 fed', note: 'hakket' },
@@ -82,14 +76,15 @@ export const RECIPES: Recipe[] = [
   {
     meatFamily: 'minced-beef',
     title: 'Kødsauce med pasta',
-    subtitle: 'Løg, hvidløg og flåede tomater · 2 personer',
+    subtitle: 'Løg, gulerødder og flåede tomater · 2 personer',
     time: '20 min',
     servings: 2,
-    nutrition: { kj: 3230, fat: 29, carbs: 83, protein: 44, fiber: 2 },
+    nutrition: { kj: 3130, fat: 29, carbs: 79, protein: 42, fiber: 5 },
     ingredients: [
       { name: 'Hakket oksekød', quantity: '300g', note: 'tilbud' },
-      { name: 'Pasta', quantity: '200g', note: 'spaghetti eller penne' },
+      { name: 'Pasta', quantity: '150g', note: 'spaghetti eller penne' },
       { name: 'Flåede tomater', quantity: '1 dåse', note: '400g' },
+      { name: 'Gulerødder', quantity: '200g', note: 'i små tern' },
       { name: 'Løg', quantity: '1 stk', note: 'hakket' },
       { name: 'Hvidløg', quantity: '2 fed', note: 'hakket' },
       { name: 'Oregano', quantity: '1 tsk' },
@@ -98,7 +93,8 @@ export const RECIPES: Recipe[] = [
     ],
     steps: [
       'Kog pasta efter anvisning.',
-      'Steg løg i olie til de er bløde. Tilføj oksekødet og bræk det i stykker.',
+      'Steg løg og gulerødder i olie til de er bløde.',
+      'Tilføj oksekødet og bræk det i stykker.',
       'Tilføj hvidløg, steg 30 sek.',
       'Tilføj flåede tomater, oregano, salt og peber.',
       'Lad simre 10 min. Server over pasta.',
@@ -110,13 +106,13 @@ export const RECIPES: Recipe[] = [
     subtitle: 'Spidskål, tomat, agurk og dressing · 2 personer',
     time: '15 min',
     servings: 2,
-    nutrition: { kj: 2880, fat: 35, carbs: 57, protein: 36, fiber: 2 },
+    nutrition: { kj: 3050, fat: 35, carbs: 65, protein: 38, fiber: 5 },
     ingredients: [
       { name: 'Hakket kalv/flæsk', quantity: '350g', note: 'tilbud' },
       { name: 'Tortilla wraps', quantity: '4 stk' },
-      { name: 'Spidskål', quantity: '150g', note: 'fintskåret' },
-      { name: 'Tomat', quantity: '1 stk', note: 'i tern' },
-      { name: 'Agurk', quantity: '½ stk', note: 'i skiver' },
+      { name: 'Spidskål', quantity: '300g', note: 'fintskåret' },
+      { name: 'Tomat', quantity: '2 stk', note: 'i tern' },
+      { name: 'Agurk', quantity: '1 stk', note: 'i skiver' },
       { name: 'Dressing', quantity: '2 spsk', note: 'yoghurt, mayo eller salsa' },
       { name: 'Spidskommen', quantity: '1 tsk' },
       { name: 'Paprika', quantity: '1 tsk' },
