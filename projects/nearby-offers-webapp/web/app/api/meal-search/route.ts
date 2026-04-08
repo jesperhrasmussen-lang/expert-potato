@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 
 import { executeMealSearch } from '@/lib/meal-search-service';
-import { generateMockMealResponse } from '@/lib/mock-meal-data';
 import type { MealSearchRequest, PortionSize } from '@/types/meal-optimizer-types';
 
 export const runtime = 'nodejs';
@@ -30,9 +29,10 @@ export async function POST(request: Request) {
       const response = await executeMealSearch(body);
       return NextResponse.json(response, { status: 200 });
     } catch {
-      // VPS unreachable — return mock data
-      const response = generateMockMealResponse(body);
-      return NextResponse.json(response, { status: 200 });
+      return NextResponse.json(
+        { error: 'Servicen er midlertidigt nede. Prøv igen om lidt.' },
+        { status: 503 },
+      );
     }
   } catch (error) {
     return NextResponse.json(

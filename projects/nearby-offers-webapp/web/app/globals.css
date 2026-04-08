@@ -643,6 +643,43 @@ button, input {
   margin: 4px 0;
 }
 
+.summary-bar-compact {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: var(--surface);
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.summary-address-sm {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.summary-subline-sm {
+  margin: 2px 0 0;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.nutrition-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 8px 12px;
+  background: rgba(248, 250, 252, 0.9);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 0.78rem;
+  color: var(--muted);
+  font-weight: 600;
+}
+
 .recipe-header {
   margin-bottom: 4px;
 }

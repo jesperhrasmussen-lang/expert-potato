@@ -146,5 +146,7 @@ export interface MeatDeal {
   chainId: string;
   storeName: string;
   distanceMeters: number;
+  servings?: number;
+  pricePerMeal?: number;
 }
 

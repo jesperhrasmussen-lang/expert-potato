@@ -19,7 +19,22 @@ from pydantic import BaseModel
 SCRIPTS_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(SCRIPTS_DIR))
 
-from find_nearby_offers_dk import geocode, nearby_places, dedupe_chains, apply_access_filters
+from functools import lru_cache
+from find_nearby_offers_dk import geocode as _geocode_raw, nearby_places as _nearby_raw, dedupe_chains, apply_access_filters
+
+
+@lru_cache(maxsize=128)
+def geocode_cached(address: str):
+    return _geocode_raw(address)
+
+
+_nearby_cache: dict = {}
+
+def nearby_cached(lat: float, lon: float, radius_km: float):
+    key = (round(lat, 4), round(lon, 4), radius_km)
+    if key not in _nearby_cache:
+        _nearby_cache[key] = _nearby_raw(lat, lon, radius_km)
+    return _nearby_cache[key]
 from ingredient_catalog_dk import query_to_family
 
 DB_PATH = SCRIPTS_DIR.parent / "projects" / "nearby-offers-webapp" / "data" / "nearby-offers.db"
@@ -50,14 +65,17 @@ async def meal_search(req: MealSearchRequest):
     if not Path(DB_PATH).exists():
         raise HTTPException(status_code=503, detail="Offer database not found")
 
-    # 1. Geocode
+    # 1. Geocode (cached)
     try:
-        lat, lon, resolved_address = geocode(req.address)
+        lat, lon, resolved_address = geocode_cached(req.address)
     except Exception as e:
         raise HTTPException(status_code=422, detail=f"Could not geocode address: {req.address}")
 
-    # 2. Find nearby places
-    places = nearby_places(lat, lon, req.radiusKm or 20.0)
+    # 2. Find nearby places (cached, rounded to ~11m for sharing)
+    rlat = round(lat, 4)
+    rlon = round(lon, 4)
+    radius = req.radiusKm or 20.0
+    places = list(nearby_cached(rlat, rlon, radius))
 
     # 3. Apply access filters if needed
     if req.maxWalkKm is not None or req.maxTransitMin is not None:

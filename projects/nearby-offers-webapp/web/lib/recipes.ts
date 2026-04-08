@@ -1,9 +1,25 @@
+export interface IngredientLine {
+  name: string;
+  quantity: string;
+  note?: string;
+}
+
+export interface Nutrition {
+  kj: number;
+  fat: number;
+  carbs: number;
+  protein: number;
+  fiber: number;
+}
+
 export interface Recipe {
   meatFamily: string;
   title: string;
   subtitle: string;
   time: string;
-  ingredients: string[];
+  servings: number;
+  nutrition: Nutrition;
+  ingredients: IngredientLine[];
   steps: string[];
 }
 
@@ -13,14 +29,16 @@ export const RECIPES: Recipe[] = [
     title: 'Cremet kylling med pasta',
     subtitle: 'Broccoli, hvidløg og flødesauce',
     time: '20 min',
+    servings: 2,
+    nutrition: { kj: 2800, fat: 18, carbs: 65, protein: 38, fiber: 4 },
     ingredients: [
-      'Kyllingekød (tilbud)',
-      'Pasta (penne eller fusilli)',
-      'Broccoli — skær i små buketter',
-      'Fløde eller creme fraiche',
-      'Hvidløg — 2 fed, hakket',
-      'Salt og peber',
-      'Lidt olie til stegning',
+      { name: 'Kyllingekød', quantity: '300g', note: 'tilbud' },
+      { name: 'Pasta', quantity: '200g', note: 'penne eller fusilli' },
+      { name: 'Broccoli', quantity: '200g', note: 'i små buketter' },
+      { name: 'Fløde', quantity: '1 dl' },
+      { name: 'Hvidløg', quantity: '2 fed', note: 'hakket' },
+      { name: 'Salt og peber', quantity: 'efter smag' },
+      { name: 'Olie', quantity: '1 spsk' },
     ],
     steps: [
       'Kog pasta efter anvisning. Tilføj broccoli de sidste 3 min.',
@@ -35,15 +53,17 @@ export const RECIPES: Recipe[] = [
     title: 'Asiatisk wok med ris',
     subtitle: 'Spidskål, soja og honning',
     time: '15 min',
+    servings: 2,
+    nutrition: { kj: 2600, fat: 14, carbs: 70, protein: 32, fiber: 3 },
     ingredients: [
-      'Hakket svinekød (tilbud)',
-      'Ris',
-      'Spidskål — skåret i strimler',
-      'Soja — 2-3 spsk.',
-      'Honning — 1 spsk.',
-      'Hvidløg — 2 fed, hakket',
-      'Ingefær — 1 tsk. revet (eller pulver)',
-      'Olie til stegning',
+      { name: 'Hakket svinekød', quantity: '300g', note: 'tilbud' },
+      { name: 'Ris', quantity: '200g' },
+      { name: 'Spidskål', quantity: '200g', note: 'i strimler' },
+      { name: 'Soja', quantity: '2 spsk' },
+      { name: 'Honning', quantity: '1 spsk' },
+      { name: 'Hvidløg', quantity: '2 fed', note: 'hakket' },
+      { name: 'Ingefær', quantity: '1 tsk', note: 'revet eller pulver' },
+      { name: 'Olie', quantity: '1 spsk' },
     ],
     steps: [
       'Kog ris efter anvisning.',
@@ -58,15 +78,17 @@ export const RECIPES: Recipe[] = [
     title: 'Kødsauce med pasta',
     subtitle: 'Løg, hvidløg og flåede tomater',
     time: '20 min',
+    servings: 2,
+    nutrition: { kj: 3000, fat: 20, carbs: 62, protein: 36, fiber: 5 },
     ingredients: [
-      'Hakket oksekød (tilbud)',
-      'Pasta (spaghetti eller penne)',
-      'Flåede tomater — 1 dåse',
-      'Løg — 1 stk., hakket',
-      'Hvidløg — 2 fed, hakket',
-      'Oregano eller italienske krydderier',
-      'Salt og peber',
-      'Olie til stegning',
+      { name: 'Hakket oksekød', quantity: '300g', note: 'tilbud' },
+      { name: 'Pasta', quantity: '200g', note: 'spaghetti eller penne' },
+      { name: 'Flåede tomater', quantity: '1 dåse', note: '400g' },
+      { name: 'Løg', quantity: '1 stk', note: 'hakket' },
+      { name: 'Hvidløg', quantity: '2 fed', note: 'hakket' },
+      { name: 'Oregano', quantity: '1 tsk' },
+      { name: 'Salt og peber', quantity: 'efter smag' },
+      { name: 'Olie', quantity: '1 spsk' },
     ],
     steps: [
       'Kog pasta efter anvisning.',
@@ -81,16 +103,19 @@ export const RECIPES: Recipe[] = [
     title: 'Tortilla wraps med krydret kød',
     subtitle: 'Spidskål, tomat, agurk og dressing',
     time: '15 min',
+    servings: 2,
+    nutrition: { kj: 2700, fat: 16, carbs: 55, protein: 34, fiber: 4 },
     ingredients: [
-      'Hakket kalv/flæsk (tilbud)',
-      'Tortilla wraps — 4 stk.',
-      'Spidskål — fintskåret',
-      'Tomat — 1-2 stk., i tern',
-      'Agurk — halv, i skiver',
-      'Dressing (yoghurt, mayo eller salsa)',
-      'Spidskommen og paprika',
-      'Salt og peber',
-      'Olie til stegning',
+      { name: 'Hakket kalv/flæsk', quantity: '300g', note: 'tilbud' },
+      { name: 'Tortilla wraps', quantity: '4 stk' },
+      { name: 'Spidskål', quantity: '150g', note: 'fintskåret' },
+      { name: 'Tomat', quantity: '1 stk', note: 'i tern' },
+      { name: 'Agurk', quantity: '½ stk', note: 'i skiver' },
+      { name: 'Dressing', quantity: '2 spsk', note: 'yoghurt, mayo eller salsa' },
+      { name: 'Spidskommen', quantity: '1 tsk' },
+      { name: 'Paprika', quantity: '1 tsk' },
+      { name: 'Salt og peber', quantity: 'efter smag' },
+      { name: 'Olie', quantity: '1 spsk' },
     ],
     steps: [
       'Steg kødet i olie, bræk det i stykker.',

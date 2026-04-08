@@ -12,8 +12,13 @@ function formatDistance(meters: number) {
   return `${(meters / 1000).toFixed(1)}km`;
 }
 
-function extractBestDeals(candidates: MealCandidate[]): MeatDeal[] {
-  const bestByMeat = new Map<string, MeatDeal>();
+interface ExtendedDeal extends MeatDeal {
+  servings: number;
+  pricePerMeal: number;
+}
+
+function extractBestDeals(candidates: MealCandidate[]): ExtendedDeal[] {
+  const bestByMeat = new Map<string, ExtendedDeal>();
 
   for (const c of candidates) {
     const meatLine = c.basketLines.find((l) =>
@@ -21,7 +26,11 @@ function extractBestDeals(candidates: MealCandidate[]): MeatDeal[] {
     );
     if (!meatLine) continue;
 
-    const deal: MeatDeal = {
+    const recipe = getRecipeForMeat(meatLine.ingredientFamilyId);
+    const servings = recipe?.servings || c.servingsPerBatch || 2;
+    const pricePerMeal = Math.round(meatLine.packagePriceDkk / servings);
+
+    const deal: ExtendedDeal = {
       meatFamilyId: meatLine.ingredientFamilyId,
       meatFamilyName: meatLine.ingredientFamilyName,
       productName: meatLine.productName,
@@ -30,6 +39,8 @@ function extractBestDeals(candidates: MealCandidate[]): MeatDeal[] {
       chainId: c.storesUsed[0]?.chainId || '',
       storeName: c.storesUsed[0]?.storeName || '',
       distanceMeters: c.storesUsed[0]?.distanceMeters || 0,
+      servings,
+      pricePerMeal,
     };
 
     const existing = bestByMeat.get(deal.meatFamilyId);
@@ -41,7 +52,7 @@ function extractBestDeals(candidates: MealCandidate[]): MeatDeal[] {
   return [...bestByMeat.values()].sort((a, b) => a.priceDkk - b.priceDkk);
 }
 
-function DealCard({ deal, rank }: { deal: MeatDeal; rank: number }) {
+function DealCard({ deal, rank }: { deal: ExtendedDeal; rank: number }) {
   const [expanded, setExpanded] = useState(false);
   const recipe = getRecipeForMeat(deal.meatFamilyId);
 
@@ -60,7 +71,7 @@ function DealCard({ deal, rank }: { deal: MeatDeal; rank: number }) {
             {deal.meatFamilyName} · {deal.priceDkk}kr / {deal.packageGrams}g
           </p>
           <p className="meal-card-line1">
-            {deal.storeName} · {formatDistance(deal.distanceMeters)}
+            {deal.storeName} · {formatDistance(deal.distanceMeters)} · {deal.servings} måltider · ~{deal.pricePerMeal}kr/måltid
           </p>
         </div>
       </div>
@@ -73,18 +84,30 @@ function DealCard({ deal, rank }: { deal: MeatDeal; rank: number }) {
 }
 
 function RecipeDetail({ recipe }: { recipe: Recipe }) {
+  const n = recipe.nutrition;
+
   return (
     <div className="meal-card-detail">
       <div className="recipe-header">
         <h3 className="recipe-title">{recipe.title}</h3>
-        <p className="recipe-subtitle">{recipe.subtitle} · {recipe.time}</p>
+        <p className="recipe-subtitle">{recipe.subtitle} · {recipe.time} · {recipe.servings} portioner</p>
+      </div>
+
+      <div className="nutrition-bar">
+        <span>{n.kj} kJ</span>
+        <span>{n.fat}g fedt</span>
+        <span>{n.carbs}g kulhydrat</span>
+        <span>{n.protein}g protein</span>
+        <span>{n.fiber}g fiber</span>
       </div>
 
       <div className="recipe-section">
         <span className="meal-card-pantry-label">Ingredienser</span>
         <ul className="recipe-list">
           {recipe.ingredients.map((item, i) => (
-            <li key={i}>{item}</li>
+            <li key={i}>
+              <strong>{item.quantity}</strong> {item.name}{item.note ? ` (${item.note})` : ''}
+            </li>
           ))}
         </ul>
       </div>
@@ -115,12 +138,11 @@ export function MealResultsView({ data }: { data: MealSearchResponse }) {
 
   return (
     <div className="results-layout">
-      <header className="summary-bar">
+      <header className="summary-bar-compact">
         <div>
-          <p className="summary-eyebrow">Billigste måltider</p>
-          <h1 className="summary-address">{data.resolvedAddress}</h1>
-          <p className="summary-subline">
-            Tilføj selvvalgte grøntsager (~25kr) og sauce/tilbehør fra skabet
+          <h2 className="summary-address-sm">{data.resolvedAddress}</h2>
+          <p className="summary-subline-sm">
+            Køb kød på tilbud + selvvalgte grøntsager (~25kr) + sauce fra skabet
           </p>
         </div>
         <Link className="secondary-button link-button" href="/">
