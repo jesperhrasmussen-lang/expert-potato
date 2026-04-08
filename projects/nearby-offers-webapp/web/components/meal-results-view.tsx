@@ -34,10 +34,10 @@ function renderStoreDistance(candidate: MealCandidate) {
   return nearest ? formatDistance(nearest.distanceMeters) : '';
 }
 
-function BasketLineRow({ line }: { line: BasketLine }) {
+function BasketLineRow({ line, showStore }: { line: BasketLine; showStore: boolean }) {
   return (
     <div className={`detail-note${line.estimated ? ' detail-note-estimated' : ''}`}>
-      <strong>{line.ingredientFamilyName}:</strong> {line.productName} · {line.estimated ? '~' : ''}{formatPrice(line.packagePriceDkk)} · bruger{' '}
+      <strong>{line.ingredientFamilyName}{showStore ? ` (${line.storeName})` : ''}:</strong> {line.productName} · {line.estimated ? '~' : ''}{formatPrice(line.packagePriceDkk)} · bruger{' '}
       {line.requiredAmountForRecipe}{line.requiredAmountUnit} · rest {Math.round(line.leftoverAmount)}{line.leftoverUnit}
     </div>
   );
@@ -81,7 +81,7 @@ function MealCard({ candidate, rank }: { candidate: MealCandidate; rank: number 
           )}
           <div className="stack-list">
             {candidate.basketLines.map((line) => (
-              <BasketLineRow key={`${candidate.candidateId}-${line.ingredientFamilyId}-${line.storeId}`} line={line} />
+              <BasketLineRow key={`${candidate.candidateId}-${line.ingredientFamilyId}-${line.storeId}`} line={line} showStore={candidate.storesUsed.length > 1} />
             ))}
           </div>
         </div>
