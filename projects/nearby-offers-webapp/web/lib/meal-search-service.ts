@@ -414,6 +414,31 @@ function resolveRequiredQuantity(slot: RecipeSlot, allowed: AllowedIngredientFam
   throw new Error(`Slot ${slot.slotKey} is missing quantity configuration`);
 }
 
+// Default package sizes when no size data is available (conservative estimates)
+const DEFAULT_PACKAGE_GRAMS: Record<string, number> = {
+  'minced-beef': 400,
+  'minced-pork': 400,
+  'minced-veal-pork': 400,
+  'chicken-fillet': 400,
+  'broccoli': 500,
+  'cauliflower': 650,
+  'white-cabbage': 1000,
+  'red-cabbage': 1000,
+};
+
+function tryParseGramsFromText(text: string): number | null {
+  const match = text.match(/(\d+(?:[.,]\d+)?)\s*(?:-|–)?\s*(\d+(?:[.,]\d+)?)?\s*(g|kg|ml|cl|dl|l)\b/i);
+  if (match) {
+    const first = Number(match[1].replace(',', '.'));
+    const second = match[2] ? Number(match[2].replace(',', '.')) : first;
+    const unit = match[3].toLowerCase();
+    const conservative = Math.min(first, second);
+    if (unit === 'kg') return conservative * 1000;
+    if (unit === 'g') return conservative;
+  }
+  return null;
+}
+
 function parsePackageMeasurement(offer: RawOffer): { value: number; unit: QuantityUnit } | null {
   if (offer.sizeGramsMin && offer.sizeGramsMin > 0) {
     return { value: offer.sizeGramsMin, unit: 'g' };
@@ -422,29 +447,44 @@ function parsePackageMeasurement(offer: RawOffer): { value: number; unit: Quanti
     return { value: offer.sizeGramsMax, unit: 'g' };
   }
 
-  const text = (offer.sizeText || '').toLowerCase();
-  if (!text) return null;
+  // Try parsing from sizeText
+  const sizeText = (offer.sizeText || '').toLowerCase();
+  if (sizeText) {
+    const match = sizeText.match(/(\d+(?:[.,]\d+)?)\s*(?:-|–)?\s*(\d+(?:[.,]\d+)?)?\s*(g|kg|ml|cl|dl|l)\b/);
+    if (match) {
+      const first = Number(match[1].replace(',', '.'));
+      const second = match[2] ? Number(match[2].replace(',', '.')) : first;
+      const unit = match[3] as QuantityUnit | 'cl' | 'l';
+      const conservative = Math.min(first, second);
 
-  const match = text.match(/(\d+(?:[.,]\d+)?)\s*(?:-|–)?\s*(\d+(?:[.,]\d+)?)?\s*(g|kg|ml|cl|dl|l)\b/);
-  if (match) {
-    const first = Number(match[1].replace(',', '.'));
-    const second = match[2] ? Number(match[2].replace(',', '.')) : first;
-    const unit = match[3] as QuantityUnit | 'cl' | 'l';
-    const conservative = Math.min(first, second);
+      if (unit === 'kg') return { value: conservative * 1000, unit: 'g' };
+      if (unit === 'g') return { value: conservative, unit: 'g' };
+      if (unit === 'l') return { value: conservative * 1000, unit: 'ml' };
+      if (unit === 'cl') return { value: conservative * 10, unit: 'ml' };
+      if (unit === 'dl') return { value: conservative * 100, unit: 'ml' };
+      return { value: conservative, unit: 'ml' };
+    }
 
-    if (unit === 'kg') return { value: conservative * 1000, unit: 'g' };
-    if (unit === 'g') return { value: conservative, unit: 'g' };
-    if (unit === 'l') return { value: conservative * 1000, unit: 'ml' };
-    if (unit === 'cl') return { value: conservative * 10, unit: 'ml' };
-    if (unit === 'dl') return { value: conservative * 100, unit: 'ml' };
-    return { value: conservative, unit: 'ml' };
+    const pieceMatch = sizeText.match(/(\d+)\s*(pcs|stk|st\.)\b/);
+    if (pieceMatch && offer.comparisonGroup) {
+      const assumedGrams = PIECE_GRAMS_ASSUMPTIONS[offer.comparisonGroup];
+      if (assumedGrams) {
+        return { value: Number(pieceMatch[1]) * assumedGrams, unit: 'g' };
+      }
+    }
   }
 
-  const pieceMatch = text.match(/(\d+)\s*(pcs|stk|st\.)\b/);
-  if (pieceMatch && offer.comparisonGroup) {
-    const assumedGrams = PIECE_GRAMS_ASSUMPTIONS[offer.comparisonGroup];
-    if (assumedGrams) {
-      return { value: Number(pieceMatch[1]) * assumedGrams, unit: 'g' };
+  // Try parsing grams from product name (e.g. "Hakket oksekød 400 g")
+  const nameGrams = tryParseGramsFromText(offer.productName || '');
+  if (nameGrams && nameGrams > 0) {
+    return { value: nameGrams, unit: 'g' };
+  }
+
+  // Fall back to default package size for the ingredient family
+  if (offer.comparisonGroup) {
+    const defaultG = DEFAULT_PACKAGE_GRAMS[offer.comparisonGroup];
+    if (defaultG) {
+      return { value: defaultG, unit: 'g' };
     }
   }
 
