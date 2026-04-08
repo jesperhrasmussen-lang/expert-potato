@@ -1,6 +1,3 @@
 {
-  "installCommand": "npm install --prefix projects/nearby-offers-webapp/web",
-  "buildCommand": "npm run build --prefix projects/nearby-offers-webapp/web",
-  "outputDirectory": "projects/nearby-offers-webapp/web/.next",
   "framework": "nextjs"
 }
