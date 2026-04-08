@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 import type { PortionSize } from '@/types/meal-optimizer-types';
@@ -11,6 +11,11 @@ interface StoredPrefs {
   address: string;
   includeStorePairs: boolean;
   portionSize: PortionSize;
+}
+
+interface AddressSuggestion {
+  display_name: string;
+  place_id: number;
 }
 
 function loadPrefs(): StoredPrefs | null {
@@ -39,6 +44,66 @@ function clearPrefs() {
   }
 }
 
+function useAddressAutocomplete() {
+  const [suggestions, setSuggestions] = useState<AddressSuggestion[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
+
+  const fetchSuggestions = useCallback((query: string) => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+    if (abortRef.current) abortRef.current.abort();
+
+    if (query.trim().length < 3) {
+      setSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+
+    timerRef.current = setTimeout(async () => {
+      const controller = new AbortController();
+      abortRef.current = controller;
+
+      try {
+        const params = new URLSearchParams({
+          q: query,
+          format: 'json',
+          addressdetails: '1',
+          limit: '5',
+          countrycodes: 'dk',
+        });
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/search?${params}`,
+          {
+            signal: controller.signal,
+            headers: { 'Accept-Language': 'da' },
+          },
+        );
+        if (!res.ok) return;
+        const data = (await res.json()) as AddressSuggestion[];
+        setSuggestions(data);
+        setShowSuggestions(data.length > 0);
+      } catch {
+        // aborted or network error
+      }
+    }, 300);
+  }, []);
+
+  const clearSuggestions = useCallback(() => {
+    setSuggestions([]);
+    setShowSuggestions(false);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+      if (abortRef.current) abortRef.current.abort();
+    };
+  }, []);
+
+  return { suggestions, showSuggestions, fetchSuggestions, clearSuggestions, setShowSuggestions };
+}
+
 export function MealSearchForm() {
   const router = useRouter();
 
@@ -48,6 +113,10 @@ export function MealSearchForm() {
   const [saveOnDevice, setSaveOnDevice] = useState(false);
   const [locating, setLocating] = useState(false);
   const [locationError, setLocationError] = useState<string | null>(null);
+
+  const { suggestions, showSuggestions, fetchSuggestions, clearSuggestions, setShowSuggestions } =
+    useAddressAutocomplete();
+  const wrapperRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const prefs = loadPrefs();
@@ -59,7 +128,28 @@ export function MealSearchForm() {
     }
   }, []);
 
+  // Close suggestions when clicking outside
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
+        setShowSuggestions(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, [setShowSuggestions]);
+
   const canSubmit = address.trim().length > 0 && !locating;
+
+  function onAddressChange(value: string) {
+    setAddress(value);
+    fetchSuggestions(value);
+  }
+
+  function onSelectSuggestion(suggestion: AddressSuggestion) {
+    setAddress(suggestion.display_name);
+    clearSuggestions();
+  }
 
   function useCurrentLocation() {
     if (!navigator.geolocation) {
@@ -69,6 +159,7 @@ export function MealSearchForm() {
 
     setLocating(true);
     setLocationError(null);
+    clearSuggestions();
 
     navigator.geolocation.getCurrentPosition(
       (position) => {
@@ -76,17 +167,19 @@ export function MealSearchForm() {
         setAddress(`${latitude.toFixed(5)}, ${longitude.toFixed(5)}`);
         setLocating(false);
       },
-      (error) => {
+      () => {
         setLocationError('Kunne ikke hente din placering. Indtast adresse manuelt.');
         setLocating(false);
       },
-      { enableHighAccuracy: true, timeout: 10000 }
+      { enableHighAccuracy: true, timeout: 10000 },
     );
   }
 
   function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!canSubmit) return;
+
+    clearSuggestions();
 
     if (saveOnDevice) {
       savePrefs({ address, includeStorePairs, portionSize });
@@ -105,16 +198,35 @@ export function MealSearchForm() {
 
   return (
     <form className="search-card" onSubmit={onSubmit}>
-      {/* Address input */}
-      <div className="field-group">
+      {/* Address input with autocomplete */}
+      <div className="field-group" ref={wrapperRef}>
         <label className="field-label" htmlFor="address">Adresse</label>
-        <input
-          id="address"
-          className="text-input"
-          value={address}
-          onChange={(e) => setAddress(e.target.value)}
-          placeholder="Indtast din adresse..."
-        />
+        <div className="autocomplete-wrapper">
+          <input
+            id="address"
+            className="text-input"
+            value={address}
+            onChange={(e) => onAddressChange(e.target.value)}
+            onFocus={() => { if (suggestions.length > 0) setShowSuggestions(true); }}
+            placeholder="Indtast din adresse..."
+            autoComplete="off"
+          />
+          {showSuggestions && (
+            <ul className="autocomplete-list">
+              {suggestions.map((s) => (
+                <li key={s.place_id}>
+                  <button
+                    type="button"
+                    className="autocomplete-item"
+                    onClick={() => onSelectSuggestion(s)}
+                  >
+                    {s.display_name}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
         <button
           type="button"
           className="secondary-button location-button"
