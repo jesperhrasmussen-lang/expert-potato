@@ -1,12 +1,6 @@
 {
-  "version": 2,
-  "builds": [
-    {
-      "src": "projects/nearby-offers-webapp/web/package.json",
-      "use": "@vercel/next",
-      "config": {
-        "rootDirectory": "projects/nearby-offers-webapp/web"
-      }
-    }
-  ]
+  "installCommand": "npm install --prefix projects/nearby-offers-webapp/web",
+  "buildCommand": "npm run build --prefix projects/nearby-offers-webapp/web",
+  "outputDirectory": "projects/nearby-offers-webapp/web/.next",
+  "framework": "nextjs"
 }
