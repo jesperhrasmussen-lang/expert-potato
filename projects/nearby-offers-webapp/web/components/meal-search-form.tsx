@@ -1,37 +1,103 @@
 "use client";
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-import type { MealSearchRequest } from '@/types/meal-optimizer-types';
+import type { PortionSize } from '@/types/meal-optimizer-types';
+
+const STORAGE_KEY = 'meal-search-prefs';
+
+interface StoredPrefs {
+  address: string;
+  includeStorePairs: boolean;
+  portionSize: PortionSize;
+}
+
+function loadPrefs(): StoredPrefs | null {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw) as StoredPrefs;
+  } catch {
+    return null;
+  }
+}
+
+function savePrefs(prefs: StoredPrefs) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(prefs));
+  } catch {
+    // localStorage unavailable
+  }
+}
+
+function clearPrefs() {
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+  } catch {
+    // localStorage unavailable
+  }
+}
 
 export function MealSearchForm() {
   const router = useRouter();
 
-  const [address, setAddress] = useState('Tingvej 4A, 2300 København S');
-  const [includeStorePairs, setIncludeStorePairs] = useState(true);
+  const [address, setAddress] = useState('');
+  const [includeStorePairs, setIncludeStorePairs] = useState(false);
+  const [portionSize, setPortionSize] = useState<PortionSize>('small');
+  const [saveOnDevice, setSaveOnDevice] = useState(false);
+  const [locating, setLocating] = useState(false);
+  const [locationError, setLocationError] = useState<string | null>(null);
 
-  const canSubmit = address.trim().length > 0;
+  useEffect(() => {
+    const prefs = loadPrefs();
+    if (prefs) {
+      setAddress(prefs.address);
+      setIncludeStorePairs(prefs.includeStorePairs);
+      setPortionSize(prefs.portionSize);
+      setSaveOnDevice(true);
+    }
+  }, []);
 
-  function buildRequest(): MealSearchRequest {
-    return {
-      address,
-      accessMode: 'walk',
-      radiusKm: null,
-      maxWalkKm: null,
-      maxTransitMin: null,
-      includeStorePairs,
-    };
+  const canSubmit = address.trim().length > 0 && !locating;
+
+  function useCurrentLocation() {
+    if (!navigator.geolocation) {
+      setLocationError('Geolocation understøttes ikke af din browser.');
+      return;
+    }
+
+    setLocating(true);
+    setLocationError(null);
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        setAddress(`${latitude.toFixed(5)}, ${longitude.toFixed(5)}`);
+        setLocating(false);
+      },
+      (error) => {
+        setLocationError('Kunne ikke hente din placering. Indtast adresse manuelt.');
+        setLocating(false);
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
   }
 
   function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!canSubmit) return;
 
-    const request = buildRequest();
+    if (saveOnDevice) {
+      savePrefs({ address, includeStorePairs, portionSize });
+    } else {
+      clearPrefs();
+    }
+
     const params = new URLSearchParams({
-      address: request.address,
-      includeStorePairs: request.includeStorePairs ? '1' : '0',
+      address,
+      includeStorePairs: includeStorePairs ? '1' : '0',
+      portionSize,
     });
 
     router.push(`/results?${params.toString()}`);
@@ -39,41 +105,85 @@ export function MealSearchForm() {
 
   return (
     <form className="search-card" onSubmit={onSubmit}>
+      {/* Address input */}
       <div className="field-group">
         <label className="field-label" htmlFor="address">Adresse</label>
         <input
           id="address"
           className="text-input"
           value={address}
-          onChange={(event) => setAddress(event.target.value)}
-          placeholder="Indtast adresse"
+          onChange={(e) => setAddress(e.target.value)}
+          placeholder="Indtast din adresse..."
         />
-        <p className="input-help">Senere kan dette udvides med “min lokation”.</p>
+        <button
+          type="button"
+          className="secondary-button location-button"
+          onClick={useCurrentLocation}
+          disabled={locating}
+        >
+          {locating ? 'Finder placering...' : 'Brug nuværende placering'}
+        </button>
+        {locationError && <p className="input-error">{locationError}</p>}
       </div>
 
+      {/* Meal size toggle */}
       <div className="field-group">
-        <span className="field-label">Resultatregel</span>
-        <div className="empty-box">
-          Appen rangerer nu de 5 billigste mulige måltider på tværs af kædernes tilbud. Afstand vises kun som information.
+        <span className="field-label">Måltidsstørrelse</span>
+        <div className="segmented-control segmented-control-two">
+          <button
+            type="button"
+            className={`segment ${portionSize === 'small' ? 'segment-active' : ''}`}
+            onClick={() => setPortionSize('small')}
+          >
+            Lille
+          </button>
+          <button
+            type="button"
+            className={`segment ${portionSize === 'large' ? 'segment-active' : ''}`}
+            onClick={() => setPortionSize('large')}
+          >
+            Stor
+          </button>
         </div>
       </div>
 
+      {/* Shop count toggle */}
       <div className="field-group">
-        <span className="field-label">Butikskombinationer</span>
+        <span className="field-label">Antal butikker</span>
+        <div className="segmented-control segmented-control-two">
+          <button
+            type="button"
+            className={`segment ${!includeStorePairs ? 'segment-active' : ''}`}
+            onClick={() => setIncludeStorePairs(false)}
+          >
+            1 butik
+          </button>
+          <button
+            type="button"
+            className={`segment ${includeStorePairs ? 'segment-active' : ''}`}
+            onClick={() => setIncludeStorePairs(true)}
+          >
+            2 butikker (300m)
+          </button>
+        </div>
+      </div>
+
+      {/* Save on device */}
+      <div className="field-group">
         <label className="checkbox-row">
           <input
             type="checkbox"
-            checked={includeStorePairs}
-            onChange={(event) => setIncludeStorePairs(event.target.checked)}
+            checked={saveOnDevice}
+            onChange={(e) => setSaveOnDevice(e.target.checked)}
           />
-          <span>Inkludér måltider, der kræver to kæder tæt på hinanden</span>
+          <span>Gem mine valg på denne enhed</span>
         </label>
       </div>
 
+      {/* Submit */}
       <button className="primary-button" type="submit" disabled={!canSubmit}>
-        Find 5 billigste måltider
+        Find billigste måltider
       </button>
     </form>
   );
 }
-

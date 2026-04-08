@@ -1,0 +1,277 @@
+{
+  "version": 2,
+  "ingredientFamilies": [
+    {
+      "id": "minced-beef",
+      "category": "meat",
+      "displayName": "Hakket oksekod",
+      "searchTerms": ["hakket oksekød"]
+    },
+    {
+      "id": "minced-pork",
+      "category": "meat",
+      "displayName": "Hakket svinekod",
+      "searchTerms": ["hakket svinekød"]
+    },
+    {
+      "id": "minced-veal-pork",
+      "category": "meat",
+      "displayName": "Hakket kalv og flaesk",
+      "searchTerms": ["hakket kalv og flæsk", "hakket kalv/flæsk"]
+    },
+    {
+      "id": "broccoli",
+      "category": "vegetable",
+      "displayName": "Broccoli",
+      "searchTerms": ["broccoli", "broccoli buketter", "broccolibuketter"],
+      "referencePricePerKg": 42,
+      "referencePackageG": 500
+    },
+    {
+      "id": "cauliflower",
+      "category": "vegetable",
+      "displayName": "Blomkal",
+      "searchTerms": ["blomkål", "blomkålsbuketter"],
+      "referencePricePerKg": 30,
+      "referencePackageG": 650
+    },
+    {
+      "id": "white-cabbage",
+      "category": "vegetable",
+      "displayName": "Hvidkal",
+      "searchTerms": ["hvidkål"],
+      "referencePricePerKg": 15,
+      "referencePackageG": 1000
+    },
+    {
+      "id": "red-cabbage",
+      "category": "vegetable",
+      "displayName": "Rodkal",
+      "searchTerms": ["rødkål", "roedkaal"],
+      "referencePricePerKg": 15,
+      "referencePackageG": 1000
+    }
+  ],
+  "unitConversionRules": [
+    { "ingredientFamilyId": "minced-beef", "baseUnit": "g" },
+    { "ingredientFamilyId": "minced-pork", "baseUnit": "g" },
+    { "ingredientFamilyId": "minced-veal-pork", "baseUnit": "g" },
+    { "ingredientFamilyId": "broccoli", "baseUnit": "g" },
+    { "ingredientFamilyId": "cauliflower", "baseUnit": "g" },
+    { "ingredientFamilyId": "white-cabbage", "baseUnit": "g" },
+    { "ingredientFamilyId": "red-cabbage", "baseUnit": "g" }
+  ],
+  "sauceDefinitions": {
+    "cream": {
+      "displayName": "Floedesauce",
+      "pantryIngredients": ["floede", "smoer", "hvidloeg", "salt", "peber"]
+    },
+    "asian": {
+      "displayName": "Asiatisk sauce",
+      "pantryIngredients": ["soja", "honning", "hvidloeg", "ingefaer"]
+    },
+    "tomato": {
+      "displayName": "Tomatsauce",
+      "pantryIngredients": ["flaede tomater", "loeg", "hvidloeg", "oregano"]
+    }
+  },
+  "portionProfiles": {
+    "small":  { "meat": { "value": 125, "unit": "g" }, "vegetable": { "value": 250, "unit": "g" }, "starch": { "value": 75, "unit": "g" } },
+    "medium": { "meat": { "value": 150, "unit": "g" }, "vegetable": { "value": 300, "unit": "g" }, "starch": { "value": 100, "unit": "g" } },
+    "large":  { "meat": { "value": 180, "unit": "g" }, "vegetable": { "value": 350, "unit": "g" }, "starch": { "value": 125, "unit": "g" } }
+  },
+  "recipes": [
+    {
+      "id": "hakket-oksekod-broccoli",
+      "slug": "hakket-oksekod-broccoli",
+      "displayName": "Hakket oksekod & broccoli",
+      "quantityBasis": "perMeal",
+      "servingsPerBatch": 1,
+      "sauceType": "cream",
+      "slots": [
+        { "slotKey": "meat", "role": "protein", "quantity": { "value": 150, "unit": "g" }, "allowedFamilies": [{ "ingredientFamilyId": "minced-beef" }] },
+        { "slotKey": "vegetable", "role": "vegetable", "quantity": { "value": 300, "unit": "g" }, "allowedFamilies": [{ "ingredientFamilyId": "broccoli" }] }
+      ],
+      "pantryItems": [
+        { "displayName": "Floedesauce", "note": "floede, smoer, hvidloeg, salt, peber" },
+        { "displayName": "Ris eller pasta" }
+      ]
+    },
+    {
+      "id": "hakket-oksekod-blomkal",
+      "slug": "hakket-oksekod-blomkal",
+      "displayName": "Hakket oksekod & blomkal",
+      "quantityBasis": "perMeal",
+      "servingsPerBatch": 1,
+      "sauceType": "cream",
+      "slots": [
+        { "slotKey": "meat", "role": "protein", "quantity": { "value": 150, "unit": "g" }, "allowedFamilies": [{ "ingredientFamilyId": "minced-beef" }] },
+        { "slotKey": "vegetable", "role": "vegetable", "quantity": { "value": 300, "unit": "g" }, "allowedFamilies": [{ "ingredientFamilyId": "cauliflower" }] }
+      ],
+      "pantryItems": [
+        { "displayName": "Floedesauce", "note": "floede, smoer, hvidloeg, salt, peber" },
+        { "displayName": "Ris eller pasta" }
+      ]
+    },
+    {
+      "id": "hakket-oksekod-hvidkal",
+      "slug": "hakket-oksekod-hvidkal",
+      "displayName": "Hakket oksekod & hvidkal",
+      "quantityBasis": "perMeal",
+      "servingsPerBatch": 1,
+      "sauceType": "asian",
+      "slots": [
+        { "slotKey": "meat", "role": "protein", "quantity": { "value": 150, "unit": "g" }, "allowedFamilies": [{ "ingredientFamilyId": "minced-beef" }] },
+        { "slotKey": "vegetable", "role": "vegetable", "quantity": { "value": 300, "unit": "g" }, "allowedFamilies": [{ "ingredientFamilyId": "white-cabbage" }] }
+      ],
+      "pantryItems": [
+        { "displayName": "Asiatisk sauce", "note": "soja, honning, hvidloeg, ingefaer" },
+        { "displayName": "Ris eller pasta" }
+      ]
+    },
+    {
+      "id": "hakket-oksekod-rodkal",
+      "slug": "hakket-oksekod-rodkal",
+      "displayName": "Hakket oksekod & rodkal",
+      "quantityBasis": "perMeal",
+      "servingsPerBatch": 1,
+      "sauceType": "tomato",
+      "slots": [
+        { "slotKey": "meat", "role": "protein", "quantity": { "value": 150, "unit": "g" }, "allowedFamilies": [{ "ingredientFamilyId": "minced-beef" }] },
+        { "slotKey": "vegetable", "role": "vegetable", "quantity": { "value": 300, "unit": "g" }, "allowedFamilies": [{ "ingredientFamilyId": "red-cabbage" }] }
+      ],
+      "pantryItems": [
+        { "displayName": "Tomatsauce", "note": "flaede tomater, loeg, hvidloeg, oregano" },
+        { "displayName": "Ris eller pasta" }
+      ]
+    },
+    {
+      "id": "hakket-svinekod-broccoli",
+      "slug": "hakket-svinekod-broccoli",
+      "displayName": "Hakket svinekod & broccoli",
+      "quantityBasis": "perMeal",
+      "servingsPerBatch": 1,
+      "sauceType": "cream",
+      "slots": [
+        { "slotKey": "meat", "role": "protein", "quantity": { "value": 150, "unit": "g" }, "allowedFamilies": [{ "ingredientFamilyId": "minced-pork" }] },
+        { "slotKey": "vegetable", "role": "vegetable", "quantity": { "value": 300, "unit": "g" }, "allowedFamilies": [{ "ingredientFamilyId": "broccoli" }] }
+      ],
+      "pantryItems": [
+        { "displayName": "Floedesauce", "note": "floede, smoer, hvidloeg, salt, peber" },
+        { "displayName": "Ris eller pasta" }
+      ]
+    },
+    {
+      "id": "hakket-svinekod-blomkal",
+      "slug": "hakket-svinekod-blomkal",
+      "displayName": "Hakket svinekod & blomkal",
+      "quantityBasis": "perMeal",
+      "servingsPerBatch": 1,
+      "sauceType": "cream",
+      "slots": [
+        { "slotKey": "meat", "role": "protein", "quantity": { "value": 150, "unit": "g" }, "allowedFamilies": [{ "ingredientFamilyId": "minced-pork" }] },
+        { "slotKey": "vegetable", "role": "vegetable", "quantity": { "value": 300, "unit": "g" }, "allowedFamilies": [{ "ingredientFamilyId": "cauliflower" }] }
+      ],
+      "pantryItems": [
+        { "displayName": "Floedesauce", "note": "floede, smoer, hvidloeg, salt, peber" },
+        { "displayName": "Ris eller pasta" }
+      ]
+    },
+    {
+      "id": "hakket-svinekod-hvidkal",
+      "slug": "hakket-svinekod-hvidkal",
+      "displayName": "Hakket svinekod & hvidkal",
+      "quantityBasis": "perMeal",
+      "servingsPerBatch": 1,
+      "sauceType": "asian",
+      "slots": [
+        { "slotKey": "meat", "role": "protein", "quantity": { "value": 150, "unit": "g" }, "allowedFamilies": [{ "ingredientFamilyId": "minced-pork" }] },
+        { "slotKey": "vegetable", "role": "vegetable", "quantity": { "value": 300, "unit": "g" }, "allowedFamilies": [{ "ingredientFamilyId": "white-cabbage" }] }
+      ],
+      "pantryItems": [
+        { "displayName": "Asiatisk sauce", "note": "soja, honning, hvidloeg, ingefaer" },
+        { "displayName": "Ris eller pasta" }
+      ]
+    },
+    {
+      "id": "hakket-svinekod-rodkal",
+      "slug": "hakket-svinekod-rodkal",
+      "displayName": "Hakket svinekod & rodkal",
+      "quantityBasis": "perMeal",
+      "servingsPerBatch": 1,
+      "sauceType": "tomato",
+      "slots": [
+        { "slotKey": "meat", "role": "protein", "quantity": { "value": 150, "unit": "g" }, "allowedFamilies": [{ "ingredientFamilyId": "minced-pork" }] },
+        { "slotKey": "vegetable", "role": "vegetable", "quantity": { "value": 300, "unit": "g" }, "allowedFamilies": [{ "ingredientFamilyId": "red-cabbage" }] }
+      ],
+      "pantryItems": [
+        { "displayName": "Tomatsauce", "note": "flaede tomater, loeg, hvidloeg, oregano" },
+        { "displayName": "Ris eller pasta" }
+      ]
+    },
+    {
+      "id": "hakket-kalv-flaesk-broccoli",
+      "slug": "hakket-kalv-flaesk-broccoli",
+      "displayName": "Hakket kalv og flaesk & broccoli",
+      "quantityBasis": "perMeal",
+      "servingsPerBatch": 1,
+      "sauceType": "cream",
+      "slots": [
+        { "slotKey": "meat", "role": "protein", "quantity": { "value": 150, "unit": "g" }, "allowedFamilies": [{ "ingredientFamilyId": "minced-veal-pork" }] },
+        { "slotKey": "vegetable", "role": "vegetable", "quantity": { "value": 300, "unit": "g" }, "allowedFamilies": [{ "ingredientFamilyId": "broccoli" }] }
+      ],
+      "pantryItems": [
+        { "displayName": "Floedesauce", "note": "floede, smoer, hvidloeg, salt, peber" },
+        { "displayName": "Ris eller pasta" }
+      ]
+    },
+    {
+      "id": "hakket-kalv-flaesk-blomkal",
+      "slug": "hakket-kalv-flaesk-blomkal",
+      "displayName": "Hakket kalv og flaesk & blomkal",
+      "quantityBasis": "perMeal",
+      "servingsPerBatch": 1,
+      "sauceType": "cream",
+      "slots": [
+        { "slotKey": "meat", "role": "protein", "quantity": { "value": 150, "unit": "g" }, "allowedFamilies": [{ "ingredientFamilyId": "minced-veal-pork" }] },
+        { "slotKey": "vegetable", "role": "vegetable", "quantity": { "value": 300, "unit": "g" }, "allowedFamilies": [{ "ingredientFamilyId": "cauliflower" }] }
+      ],
+      "pantryItems": [
+        { "displayName": "Floedesauce", "note": "floede, smoer, hvidloeg, salt, peber" },
+        { "displayName": "Ris eller pasta" }
+      ]
+    },
+    {
+      "id": "hakket-kalv-flaesk-hvidkal",
+      "slug": "hakket-kalv-flaesk-hvidkal",
+      "displayName": "Hakket kalv og flaesk & hvidkal",
+      "quantityBasis": "perMeal",
+      "servingsPerBatch": 1,
+      "sauceType": "asian",
+      "slots": [
+        { "slotKey": "meat", "role": "protein", "quantity": { "value": 150, "unit": "g" }, "allowedFamilies": [{ "ingredientFamilyId": "minced-veal-pork" }] },
+        { "slotKey": "vegetable", "role": "vegetable", "quantity": { "value": 300, "unit": "g" }, "allowedFamilies": [{ "ingredientFamilyId": "white-cabbage" }] }
+      ],
+      "pantryItems": [
+        { "displayName": "Asiatisk sauce", "note": "soja, honning, hvidloeg, ingefaer" },
+        { "displayName": "Ris eller pasta" }
+      ]
+    },
+    {
+      "id": "hakket-kalv-flaesk-rodkal",
+      "slug": "hakket-kalv-flaesk-rodkal",
+      "displayName": "Hakket kalv og flaesk & rodkal",
+      "quantityBasis": "perMeal",
+      "servingsPerBatch": 1,
+      "sauceType": "tomato",
+      "slots": [
+        { "slotKey": "meat", "role": "protein", "quantity": { "value": 150, "unit": "g" }, "allowedFamilies": [{ "ingredientFamilyId": "minced-veal-pork" }] },
+        { "slotKey": "vegetable", "role": "vegetable", "quantity": { "value": 300, "unit": "g" }, "allowedFamilies": [{ "ingredientFamilyId": "red-cabbage" }] }
+      ],
+      "pantryItems": [
+        { "displayName": "Tomatsauce", "note": "flaede tomater, loeg, hvidloeg, oregano" },
+        { "displayName": "Ris eller pasta" }
+      ]
+    }
+  ]
+}

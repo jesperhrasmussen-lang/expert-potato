@@ -3,6 +3,24 @@ export type AccessMode = 'radius' | 'walk' | 'transit';
 export type IngredientCategory = 'meat' | 'vegetable' | 'dairy';
 export type SlotRole = 'protein' | 'vegetable' | 'dairy' | 'other';
 export type QuantityUnit = 'g' | 'kg' | 'ml' | 'dl' | 'piece';
+export type PortionSize = 'small' | 'medium' | 'large';
+export type SauceType = 'cream' | 'asian' | 'tomato';
+
+export interface PantryItem {
+  displayName: string;
+  note?: string;
+}
+
+export interface SauceDefinition {
+  displayName: string;
+  pantryIngredients: string[];
+}
+
+export interface PortionProfile {
+  meat: { value: number; unit: QuantityUnit };
+  vegetable: { value: number; unit: QuantityUnit };
+  starch: { value: number; unit: QuantityUnit };
+}
 
 export interface MealSearchRequest {
   address: string;
@@ -11,6 +29,7 @@ export interface MealSearchRequest {
   maxWalkKm: number | null;
   maxTransitMin: number | null;
   includeStorePairs: boolean;
+  portionSize: PortionSize;
 }
 
 export interface IngredientFamily {
@@ -18,6 +37,8 @@ export interface IngredientFamily {
   category: IngredientCategory;
   displayName: string;
   searchTerms: string[];
+  referencePricePerKg?: number;
+  referencePackageG?: number;
 }
 
 export interface IngredientQuantity {
@@ -44,6 +65,8 @@ export interface RecipeTemplate {
   quantityBasis: 'perMeal' | 'perBatch';
   servingsPerBatch: number;
   slots: RecipeSlot[];
+  sauceType?: SauceType;
+  pantryItems?: PantryItem[];
 }
 
 export interface StoreOption {
@@ -74,6 +97,7 @@ export interface BasketLine {
   apportionedCostDkk: number;
   leftoverAmount: number;
   leftoverUnit: QuantityUnit;
+  estimated?: boolean;
 }
 
 export interface MealCandidate {
@@ -94,6 +118,9 @@ export interface MealCandidate {
     requiredQuantity: IngredientQuantity;
   }[];
   basketLines: BasketLine[];
+  sauceType?: SauceType;
+  pantryItems?: PantryItem[];
+  hasEstimatedPrice?: boolean;
 }
 
 export interface MealSearchSummary {

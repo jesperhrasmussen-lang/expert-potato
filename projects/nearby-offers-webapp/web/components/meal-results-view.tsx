@@ -1,17 +1,18 @@
 "use client";
 
 import Link from 'next/link';
+import { useState } from 'react';
 
 import type { BasketLine, MealCandidate, MealSearchResponse } from '@/types/meal-optimizer-types';
 
 function formatDistance(distanceMeters: number | null) {
-  if (distanceMeters === null) return 'Ukendt afstand';
-  if (distanceMeters < 1000) return `${distanceMeters} m`;
-  return `${(distanceMeters / 1000).toFixed(1)} km`;
+  if (distanceMeters === null) return '?';
+  if (distanceMeters < 1000) return `${distanceMeters}m`;
+  return `${(distanceMeters / 1000).toFixed(1)}km`;
 }
 
 function formatPrice(price: number) {
-  return `${price.toFixed(0)} kr`;
+  return `${price.toFixed(0)}kr`;
 }
 
 function formatGeneratedAt(value: string) {
@@ -28,77 +29,120 @@ function renderStores(candidate: MealCandidate) {
   return candidate.storesUsed.map((store) => store.storeName).join(' + ');
 }
 
-function EmptySection({ text }: { text: string }) {
-  return <div className="empty-box">{text}</div>;
+function renderStoreDistance(candidate: MealCandidate) {
+  const nearest = candidate.storesUsed[0];
+  return nearest ? formatDistance(nearest.distanceMeters) : '';
 }
 
 function BasketLineRow({ line }: { line: BasketLine }) {
   return (
-    <div className="detail-note">
-      <strong>{line.ingredientFamilyName}:</strong> {line.productName} · {formatPrice(line.packagePriceDkk)} · bruger{' '}
-      {line.requiredAmountForRecipe} {line.requiredAmountUnit} · rest {Math.round(line.leftoverAmount)} {line.leftoverUnit}
+    <div className={`detail-note${line.estimated ? ' detail-note-estimated' : ''}`}>
+      <strong>{line.ingredientFamilyName}:</strong> {line.productName} · {line.estimated ? '~' : ''}{formatPrice(line.packagePriceDkk)} · bruger{' '}
+      {line.requiredAmountForRecipe}{line.requiredAmountUnit} · rest {Math.round(line.leftoverAmount)}{line.leftoverUnit}
     </div>
   );
 }
 
-function MealCard({ candidate }: { candidate: MealCandidate }) {
+function MealCard({ candidate, rank }: { candidate: MealCandidate; rank: number }) {
+  const [expanded, setExpanded] = useState(false);
+
   return (
-    <article className="offer-card compact-offer-card">
-      <div className="offer-card-top">
-        <div>
-          <p className="offer-chain">{renderStores(candidate)}</p>
-          <h3 className="offer-title">{candidate.recipeName}</h3>
+    <article
+      className="meal-card-compact"
+      onClick={() => setExpanded(!expanded)}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setExpanded(!expanded); }}
+    >
+      <div className="meal-card-summary">
+        <span className="meal-card-rank">{rank}</span>
+        <div className="meal-card-lines">
+          <p className="meal-card-line1">
+            {renderStores(candidate)} · {renderStoreDistance(candidate)}
+            {candidate.hasEstimatedPrice && <span className="badge badge-warn meal-card-est-badge">est. pris</span>}
+          </p>
+          <p className="meal-card-line2">
+            {candidate.recipeName} · {candidate.hasEstimatedPrice ? '~' : ''}{formatPrice(candidate.pricePerMealDkk)}/m · {formatPrice(candidate.basketCostDkk)} · {candidate.servingsPerBatch}m
+          </p>
         </div>
-        <div className="offer-price-block">
-          <div className="offer-price">{formatPrice(candidate.pricePerMealDkk)}</div>
-          <div className="offer-unit-price">pr. måltid</div>
+      </div>
+
+      {expanded && (
+        <div className="meal-card-detail">
+          {candidate.pantryItems && candidate.pantryItems.length > 0 && (
+            <div className="meal-card-pantry">
+              <span className="meal-card-pantry-label">Derhjemme:</span>
+              {candidate.pantryItems.map((item) => (
+                <span key={item.displayName} className="badge badge-neutral">
+                  {item.displayName}{item.note ? ` (${item.note})` : ''}
+                </span>
+              ))}
+            </div>
+          )}
+          <div className="stack-list">
+            {candidate.basketLines.map((line) => (
+              <BasketLineRow key={`${candidate.candidateId}-${line.ingredientFamilyId}-${line.storeId}`} line={line} />
+            ))}
+          </div>
         </div>
-      </div>
-
-      <div className="offer-meta-row compact-meta-row">
-        <span>Kurv: {formatPrice(candidate.basketCostDkk)}</span>
-        <span>Opskrift: {formatPrice(candidate.recipeCostDkk)}</span>
-        <span>{formatDistance(candidate.walkingDistanceMeters)}</span>
-      </div>
-
-      <div className="badge-row">
-        {candidate.chosenIngredients.map((ingredient) => (
-          <span key={ingredient.slotKey} className="badge badge-neutral">
-            {ingredient.ingredientFamilyName}
-          </span>
-        ))}
-        {candidate.interStoreDistanceMeters !== null ? (
-          <span className="badge badge-direct">2 butikker · {formatDistance(candidate.interStoreDistanceMeters)}</span>
-        ) : (
-          <span className="badge badge-direct">1 butik</span>
-        )}
-      </div>
-
-      <div className="stack-list">
-        {candidate.basketLines.map((line) => (
-          <BasketLineRow key={`${candidate.candidateId}-${line.ingredientFamilyId}-${line.storeId}`} line={line} />
-        ))}
-      </div>
+      )}
     </article>
   );
 }
 
+function EmptyState() {
+  return (
+    <div className="empty-box empty-state-large">
+      <p><strong>Fa tilbud denne uge</strong></p>
+      <p>Der er for fa tilbud til at sammensaette maltider lige nu. Prov igen mandag, nar nye tilbudsaviser udkommer.</p>
+    </div>
+  );
+}
+
 export function MealResultsView({ data }: { data: MealSearchResponse }) {
+  const hasEnoughResults = data.candidates.length >= 3;
+
   return (
     <div className="results-layout">
       <header className="summary-bar">
         <div>
-          <p className="summary-eyebrow">Billigste måltider</p>
+          <p className="summary-eyebrow">Billigste maltider</p>
           <h1 className="summary-address">{data.resolvedAddress}</h1>
           <p className="summary-subline">
-            {data.summary.totalCandidates} billigste måltider · {data.summary.totalStoresInScope} kæder med afstandsdata ·{' '}
-            {data.search.includeStorePairs ? 'to-kæde-kombinationer tilladt' : 'kun enkeltkæder'}
+            {data.summary.totalCandidates} maltider fundet · {data.summary.totalStoresInScope} kaeder ·{' '}
+            {data.search.includeStorePairs ? 'to-kaede-kombinationer tilladt' : 'kun enkelkaeder'}
           </p>
         </div>
-        <Link className="secondary-button link-button" href="/search">
-          Redigér søgning
+        <Link className="secondary-button link-button" href="/">
+          Rediger sogning
         </Link>
       </header>
+
+      <section className="panel">
+        <div className="section-head">
+          <h2>Maltidskandidater</h2>
+          <span>{data.candidates.length} fund</span>
+        </div>
+
+        {hasEnoughResults ? (
+          <div className="stack-list">
+            {data.candidates.map((candidate, index) => (
+              <MealCard key={candidate.candidateId} candidate={candidate} rank={index + 1} />
+            ))}
+          </div>
+        ) : data.candidates.length > 0 ? (
+          <>
+            <div className="stack-list">
+              {data.candidates.map((candidate, index) => (
+                <MealCard key={candidate.candidateId} candidate={candidate} rank={index + 1} />
+              ))}
+            </div>
+            <EmptyState />
+          </>
+        ) : (
+          <EmptyState />
+        )}
+      </section>
 
       <section className="panel transparency-panel">
         <div className="section-head">
@@ -110,34 +154,15 @@ export function MealResultsView({ data }: { data: MealSearchResponse }) {
             <p>{formatGeneratedAt(data.summary.generatedAt)}</p>
           </div>
           <div>
-            <p className="transparency-label">Kæder med afstandsdata</p>
+            <p className="transparency-label">Kaeder med afstandsdata</p>
             <p>{data.summary.totalStoresInScope}</p>
           </div>
           <div>
             <p className="transparency-label">Butikspar vurderet</p>
             <p>{data.summary.totalStorePairsConsidered}</p>
           </div>
-          <div>
-            <p className="transparency-label">Kildeprincip</p>
-            <p>DB-først med direkte kædekilder og fallback-enrichment</p>
-          </div>
-        </div>
-      </section>
-
-      <section className="panel">
-        <div className="section-head">
-          <h2>Måltidskandidater</h2>
-          <span>{data.candidates.length} fund</span>
-        </div>
-        <div className="stack-list">
-          {data.candidates.length ? (
-            data.candidates.map((candidate) => <MealCard key={candidate.candidateId} candidate={candidate} />)
-          ) : (
-            <EmptySection text="Ingen måltider kunne sammensættes fra de aktuelle tilbud i søgeområdet." />
-          )}
         </div>
       </section>
     </div>
   );
 }
-

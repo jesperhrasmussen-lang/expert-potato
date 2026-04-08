@@ -174,7 +174,7 @@ button, input {
 }
 
 .segmented-control-two {
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
 }
 
 .segment,
@@ -485,6 +485,132 @@ button, input {
 .checkbox-row input {
   width: 16px;
   height: 16px;
+}
+
+.location-button {
+  width: 100%;
+  margin-top: 8px;
+  text-align: center;
+}
+
+.input-error {
+  margin: 6px 0 0;
+  font-size: 0.88rem;
+  color: #dc2626;
+}
+
+/* V2 compact meal cards */
+.meal-card-compact {
+  background: var(--surface);
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  border-radius: 14px;
+  padding: 14px 16px;
+  cursor: pointer;
+  transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.meal-card-compact::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: linear-gradient(180deg, var(--accent), rgba(37, 99, 235, 0.12));
+}
+
+.meal-card-compact:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-strong);
+  border-color: rgba(37, 99, 235, 0.22);
+}
+
+.meal-card-summary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.meal-card-rank {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.meal-card-lines {
+  flex: 1;
+  min-width: 0;
+}
+
+.meal-card-line1 {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.meal-card-line2 {
+  margin: 2px 0 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.meal-card-detail {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.meal-card-pantry {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.meal-card-pantry-label {
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+
+.empty-state-large {
+  text-align: center;
+  padding: 24px;
+}
+
+.empty-state-large p {
+  margin: 4px 0;
+}
+
+.meal-card-est-badge {
+  margin-left: 8px;
+  font-size: 0.72rem;
+  padding: 2px 8px;
+  vertical-align: middle;
+}
+
+.detail-note-estimated {
+  background: #fef3c7;
+  border-color: #fde68a;
 }
 
 @media (max-width: 720px) {

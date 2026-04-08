@@ -12,6 +12,7 @@ import type {
   MealCandidate,
   MealSearchRequest,
   MealSearchResponse,
+  PortionSize,
   QuantityUnit,
   RecipeSlot,
   RecipeTemplate,
@@ -19,9 +20,17 @@ import type {
 } from '@/types/meal-optimizer-types';
 
 const execFileAsync = promisify(execFile);
-const MAX_STORE_PAIR_METERS = 600;
+const MAX_STORE_PAIR_METERS = 300;
+const FALLBACK_STORE_PAIR_METERS = 600;
 const DEFAULT_CHAIN_DISTANCE_RADIUS_KM = 20;
-const RESULT_LIMIT = 5;
+const RESULT_LIMIT = 10;
+const MIN_RESULTS_BEFORE_FALLBACK = 3;
+
+const PORTION_MULTIPLIERS: Record<PortionSize, { meat: number; vegetable: number }> = {
+  small:  { meat: 125 / 150, vegetable: 250 / 300 },
+  medium: { meat: 1,         vegetable: 1 },
+  large:  { meat: 180 / 150, vegetable: 350 / 300 },
+};
 const PIECE_GRAMS_ASSUMPTIONS: Record<string, number> = {
   broccoli: 500,
   cauliflower: 650,
@@ -80,7 +89,10 @@ interface FamilyOfferChoice {
   store: StoreOption;
   packageQuantity: number;
   packageUnit: QuantityUnit;
+  estimated?: boolean;
 }
+
+const ESTIMATED_PRICE_MARKUP = 1.2;
 
 export async function executeMealSearch(request: MealSearchRequest): Promise<MealSearchResponse> {
   if (!hasLocalOfferDb()) {
@@ -88,23 +100,39 @@ export async function executeMealSearch(request: MealSearchRequest): Promise<Mea
   }
 
   const catalog = loadMealCatalog();
+  const portionSize = request.portionSize || 'medium';
   const payload = await runRawDbSearch(request, catalog.ingredientFamilies.flatMap((family) => family.searchTerms));
   const stores = buildStores(payload.places, payload.offers);
-  const storeSets = buildStoreSets(stores, request.includeStorePairs);
   const activeOffers = payload.offers.filter((offer) => offer.offerState === 'active');
 
-  const candidates = storeSets.flatMap((storeSet) =>
-    catalog.recipeTemplates.flatMap((recipeTemplate) =>
-      buildCandidatesForStoreSet({
-        storeSet,
-        recipeTemplate,
-        storesByChainId: new Map(stores.map((store) => [store.chainId, store])),
-        activeOffers,
-        ingredientFamilyById: catalog.ingredientFamilyById,
-        conversionRules: catalog.conversionRules,
-      }),
-    ),
-  );
+  function buildCandidatesWithPairDistance(maxPairMeters: number) {
+    const storeSets = buildStoreSets(stores, request.includeStorePairs, maxPairMeters);
+    return {
+      storeSets,
+      candidates: storeSets.flatMap((storeSet) =>
+        catalog.recipeTemplates.flatMap((recipeTemplate) =>
+          buildCandidatesForStoreSet({
+            storeSet,
+            recipeTemplate,
+            storesByChainId: new Map(stores.map((store) => [store.chainId, store])),
+            activeOffers,
+            ingredientFamilyById: catalog.ingredientFamilyById,
+            conversionRules: catalog.conversionRules,
+            portionSize,
+          }),
+        ),
+      ),
+    };
+  }
+
+  let { storeSets, candidates } = buildCandidatesWithPairDistance(MAX_STORE_PAIR_METERS);
+
+  // Fallback to wider pair distance if too few results
+  if (candidates.length < MIN_RESULTS_BEFORE_FALLBACK && request.includeStorePairs) {
+    const fallback = buildCandidatesWithPairDistance(FALLBACK_STORE_PAIR_METERS);
+    storeSets = fallback.storeSets;
+    candidates = fallback.candidates;
+  }
 
   const deduped = dedupeCandidates(candidates).sort(compareCandidates);
   const limited = deduped.slice(0, RESULT_LIMIT);
@@ -178,7 +206,7 @@ function buildStores(places: RawPlace[], offers: RawOffer[]): StoreOption[] {
   return [...stores.values()].sort((a, b) => a.distanceMeters - b.distanceMeters);
 }
 
-function buildStoreSets(stores: StoreOption[], includePairs: boolean): CandidateStoreSet[] {
+function buildStoreSets(stores: StoreOption[], includePairs: boolean, maxPairMeters: number = MAX_STORE_PAIR_METERS): CandidateStoreSet[] {
   const singles = stores.map((store) => ({
     key: store.storeId,
     stores: [store],
@@ -194,7 +222,7 @@ function buildStoreSets(stores: StoreOption[], includePairs: boolean): Candidate
       const a = stores[i];
       const b = stores[j];
       const pairDistanceMeters = haversineMeters((a as StoreOption & { lat?: number; lon?: number }).lat, (a as StoreOption & { lat?: number; lon?: number }).lon, (b as StoreOption & { lat?: number; lon?: number }).lat, (b as StoreOption & { lat?: number; lon?: number }).lon);
-      if (pairDistanceMeters === null || pairDistanceMeters > MAX_STORE_PAIR_METERS) continue;
+      if (pairDistanceMeters === null || pairDistanceMeters > maxPairMeters) continue;
       pairs.push({
         key: `${a.storeId}+${b.storeId}`,
         stores: [a, b],
@@ -214,14 +242,15 @@ function buildCandidatesForStoreSet(params: {
   activeOffers: RawOffer[];
   ingredientFamilyById: Map<string, IngredientFamily>;
   conversionRules: Parameters<typeof computeMealPricing>[0]['conversionRules'];
+  portionSize: PortionSize;
 }): MealCandidate[] {
-  const { storeSet, recipeTemplate, storesByChainId, activeOffers, ingredientFamilyById, conversionRules } = params;
+  const { storeSet, recipeTemplate, storesByChainId, activeOffers, ingredientFamilyById, conversionRules, portionSize } = params;
   const scopedOffers = activeOffers.filter((offer) =>
     storeSet.stores.some((store) => normalizeChainId(offer.storeNormalized || offer.store || '') === store.chainId),
   );
 
   const slotChoices = recipeTemplate.slots.map((slot) =>
-    resolveSlotChoices(slot, scopedOffers, ingredientFamilyById, storesByChainId),
+    resolveSlotChoices(slot, scopedOffers, ingredientFamilyById, storesByChainId, portionSize, storeSet),
   );
 
   if (slotChoices.some((choices) => choices.length === 0)) {
@@ -269,6 +298,14 @@ function buildCandidatesForStoreSet(params: {
       requiredQuantity: choice.requiredQuantity,
     }));
 
+    const hasEstimatedPrice = combination.some((choice) => choice.estimated);
+
+    // Mark estimated basket lines
+    const basketLines = pricing.basketLines.map((line) => {
+      const matchingChoice = combination.find((c) => c.ingredientFamily.id === line.ingredientFamilyId);
+      return matchingChoice?.estimated ? { ...line, estimated: true } : line;
+    });
+
     candidates.push({
       candidateId: `${recipeTemplate.id}:${[...selectedStores.keys()].sort().join('+')}:${chosenIngredients.map((item) => item.ingredientFamilyId).join('+')}`,
       recipeTemplateId: recipeTemplate.id,
@@ -284,7 +321,10 @@ function buildCandidatesForStoreSet(params: {
           ? storeSet.walkingDistanceMeters
           : [...selectedStores.values()][0]?.distanceMeters ?? storeSet.walkingDistanceMeters,
       chosenIngredients,
-      basketLines: pricing.basketLines,
+      basketLines,
+      sauceType: recipeTemplate.sauceType,
+      pantryItems: recipeTemplate.pantryItems,
+      hasEstimatedPrice,
     });
   }
 
@@ -296,12 +336,20 @@ function resolveSlotChoices(
   offers: RawOffer[],
   ingredientFamilyById: Map<string, IngredientFamily>,
   storesByChainId: Map<string, StoreOption>,
+  portionSize: PortionSize = 'medium',
+  storeSet?: CandidateStoreSet,
 ) {
   return slot.allowedFamilies.flatMap((allowed) => {
     const ingredientFamily = ingredientFamilyById.get(allowed.ingredientFamilyId);
     if (!ingredientFamily) return [];
 
-    const requiredQuantity = resolveRequiredQuantity(slot, allowed);
+    const baseQuantity = resolveRequiredQuantity(slot, allowed);
+    const slotRole = slot.role === 'protein' ? 'meat' : slot.role === 'vegetable' ? 'vegetable' : null;
+    const multiplier = slotRole ? PORTION_MULTIPLIERS[portionSize][slotRole] : 1;
+    const requiredQuantity: IngredientQuantity = {
+      value: Math.round(baseQuantity.value * multiplier),
+      unit: baseQuantity.unit,
+    };
     const matchingOffers = offers
       .filter((offer) => offer.comparisonGroup === ingredientFamily.id)
       .map((offer) => {
@@ -329,7 +377,34 @@ function resolveSlotChoices(
         return a.store.distanceMeters - b.store.distanceMeters;
       });
 
-    return matchingOffers.length ? [matchingOffers[0]] : [];
+    if (matchingOffers.length) return [matchingOffers[0]];
+
+    // Fallback: generate estimated offer from reference price when no real offer exists
+    if (ingredientFamily.referencePricePerKg && ingredientFamily.referencePackageG && storeSet) {
+      const packageG = ingredientFamily.referencePackageG;
+      const estimatedPrice = Math.round(ingredientFamily.referencePricePerKg * (packageG / 1000) * ESTIMATED_PRICE_MARKUP);
+      const syntheticOffer: RawOffer = {
+        productName: `${ingredientFamily.displayName} (estimeret pris)`,
+        effectivePrice: estimatedPrice,
+        price: estimatedPrice,
+        sizeGramsMin: packageG,
+        comparisonGroup: ingredientFamily.id,
+        offerState: 'active',
+      };
+      const fallbackStore = storeSet.stores[0];
+      return [{
+        slotKey: slot.slotKey,
+        ingredientFamily,
+        requiredQuantity,
+        offer: syntheticOffer,
+        store: fallbackStore,
+        packageQuantity: packageG,
+        packageUnit: 'g' as QuantityUnit,
+        estimated: true,
+      }];
+    }
+
+    return [];
   });
 }
 
@@ -383,9 +458,8 @@ function parsePackageMeasurement(offer: RawOffer): { value: number; unit: Quanti
 function renderRecipeName(chosenIngredients: { ingredientFamilyName: string; slotKey: string }[]) {
   const bySlot = new Map(chosenIngredients.map((item) => [item.slotKey, item.ingredientFamilyName]));
   const protein = bySlot.get('meat') || bySlot.get('protein') || 'Protein';
-  const vegetable = bySlot.get('vegetable') || 'grøntsag';
-  const dairy = bySlot.get('dairy') || 'sauce';
-  return `${protein} med ${vegetable} og ${dairy}-sauce`;
+  const vegetable = bySlot.get('vegetable') || 'grontsag';
+  return `${protein} & ${vegetable}`;
 }
 
 function dedupeCandidates(candidates: MealCandidate[]) {

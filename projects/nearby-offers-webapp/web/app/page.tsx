@@ -1,24 +1,15 @@
-import Link from 'next/link';
+import { MealSearchForm } from '@/components/meal-search-form';
 
 export default function HomePage() {
   return (
-    <main className="home-page">
-      <div className="hero-card">
-        <p className="eyebrow">V1 prototype</p>
+    <main className="page-stack">
+      <section className="intro-block">
         <h1>Nearby Meals</h1>
-        <p className="hero-copy">
-          DB-først webapp som finder de billigste mulige måltider nær brugeren ud fra aktuelle tilbud.
+        <p className="page-copy">
+          Find de billigste måltider ud fra aktuelle tilbud nær dig.
         </p>
-        <div className="hero-actions">
-          <Link href="/search" className="primary-button link-button">
-            Gå til søgning
-          </Link>
-          <Link href="/results" className="secondary-button link-button">
-            Se resultater
-          </Link>
-        </div>
-      </div>
+      </section>
+      <MealSearchForm />
     </main>
   );
 }
-
