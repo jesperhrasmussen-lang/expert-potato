@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-import { hasLocalOfferDb } from '@/lib/db-search';
+import { executeMealSearch } from '@/lib/meal-search-service';
 import { generateMockMealResponse } from '@/lib/mock-meal-data';
 import type { MealSearchRequest, PortionSize } from '@/types/meal-optimizer-types';
 
@@ -26,15 +26,14 @@ export async function POST(request: Request) {
     }
     validateMealSearchRequest(body);
 
-    if (hasLocalOfferDb()) {
-      const { executeMealSearch } = await import('@/lib/meal-search-service');
+    try {
       const response = await executeMealSearch(body);
       return NextResponse.json(response, { status: 200 });
+    } catch {
+      // VPS unreachable — return mock data
+      const response = generateMockMealResponse(body);
+      return NextResponse.json(response, { status: 200 });
     }
-
-    // No local DB (e.g. Vercel) — return mock data
-    const response = generateMockMealResponse(body);
-    return NextResponse.json(response, { status: 200 });
   } catch (error) {
     return NextResponse.json(
       {

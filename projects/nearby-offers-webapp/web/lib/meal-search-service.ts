@@ -1,8 +1,3 @@
-import { execFile } from 'node:child_process';
-import path from 'node:path';
-import { promisify } from 'node:util';
-
-import { hasLocalOfferDb, localOfferDbPath } from '@/lib/db-search';
 import { loadMealCatalog } from '@/lib/meal-catalog';
 import { computeMealPricing, type SelectedRecipeIngredient } from '@/lib/meal-pricing';
 import type {
@@ -19,7 +14,7 @@ import type {
   StoreOption,
 } from '@/types/meal-optimizer-types';
 
-const execFileAsync = promisify(execFile);
+const VPS_API_URL = process.env.VPS_API_URL || 'http://187.124.179.86:8081';
 const MAX_STORE_PAIR_METERS = 300;
 const FALLBACK_STORE_PAIR_METERS = 600;
 const DEFAULT_CHAIN_DISTANCE_RADIUS_KM = 20;
@@ -95,13 +90,9 @@ interface FamilyOfferChoice {
 const ESTIMATED_PRICE_MARKUP = 1.2;
 
 export async function executeMealSearch(request: MealSearchRequest): Promise<MealSearchResponse> {
-  if (!hasLocalOfferDb()) {
-    throw new Error('Lokal tilbudsdatabase mangler. Kør DB refresh-jobbet først.');
-  }
-
   const catalog = loadMealCatalog();
   const portionSize = request.portionSize || 'medium';
-  const payload = await runRawDbSearch(request, catalog.ingredientFamilies.flatMap((family) => family.searchTerms));
+  const payload = await fetchFromVpsApi(request);
   const stores = buildStores(payload.places, payload.offers);
   const activeOffers = payload.offers.filter((offer) => offer.offerState === 'active');
 
@@ -150,30 +141,27 @@ export async function executeMealSearch(request: MealSearchRequest): Promise<Mea
   };
 }
 
-async function runRawDbSearch(request: MealSearchRequest, queries: string[]): Promise<RawPayload> {
-  const scriptPath = path.resolve(process.cwd(), '..', '..', '..', 'scripts', 'search_offer_db_dk.py');
-  const args = [
-    scriptPath,
-    localOfferDbPath(),
-    '--address',
-    request.address,
-    '--radius-km',
-    String(resolveRadiusKm(request)),
-    '--all-chains',
-    '--skip-quality-filters',
-    '--json',
-  ];
-
-  for (const query of queries) {
-    args.push('--query', query);
-  }
-
-  const { stdout } = await execFileAsync('python3', args, {
-    cwd: path.resolve(process.cwd(), '..', '..', '..'),
-    maxBuffer: 20 * 1024 * 1024,
+async function fetchFromVpsApi(request: MealSearchRequest): Promise<RawPayload> {
+  const response = await fetch(`${VPS_API_URL}/api/meal-search`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      address: request.address,
+      radiusKm: resolveRadiusKm(request),
+      maxWalkKm: request.maxWalkKm,
+      maxTransitMin: request.maxTransitMin,
+      includeStorePairs: request.includeStorePairs,
+      portionSize: request.portionSize,
+    }),
+    signal: AbortSignal.timeout(15000),
   });
 
-  return JSON.parse(stdout) as RawPayload;
+  if (!response.ok) {
+    const body = await response.json().catch(() => ({})) as { detail?: string };
+    throw new Error(body.detail || `VPS API returned ${response.status}`);
+  }
+
+  return (await response.json()) as RawPayload;
 }
 
 function buildStores(places: RawPlace[], offers: RawOffer[]): StoreOption[] {
