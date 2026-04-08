@@ -138,24 +138,13 @@ export function MealResultsView({ data }: { data: MealSearchResponse }) {
 
   return (
     <div className="results-layout">
-      <header className="summary-bar-compact">
-        <div>
-          <h2 className="summary-address-sm">{data.resolvedAddress}</h2>
-          <p className="summary-subline-sm">
-            Køb kød på tilbud + selvvalgte grøntsager (~25kr) + sauce fra skabet
-          </p>
-        </div>
-        <Link className="secondary-button link-button" href="/">
-          Ny søgning
-        </Link>
-      </header>
-
       {deals.length > 0 ? (
         <section className="panel">
           <div className="section-head">
-            <h2>Kødtilbud nær dig</h2>
-            <span>Tryk for opskrift</span>
+            <h3 className="section-title-sm">Kødtilbud nær dig · <span className="muted-inline">tryk for opskrift</span></h3>
+            <Link className="link-button section-back-link" href="/">Ny søgning</Link>
           </div>
+          <p className="section-note">Køb kød på tilbud + selvvalgte grøntsager (~25kr) + sauce fra skabet</p>
           <div className="stack-list">
             {deals.map((deal, i) => (
               <DealCard key={deal.meatFamilyId} deal={deal} rank={i + 1} />

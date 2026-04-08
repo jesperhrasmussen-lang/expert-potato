@@ -667,6 +667,28 @@ button, input {
   color: var(--muted);
 }
 
+.section-title-sm {
+  margin: 0;
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
+.muted-inline {
+  color: var(--muted);
+  font-weight: 400;
+}
+
+.section-back-link {
+  font-size: 0.82rem;
+  padding: 6px 12px;
+}
+
+.section-note {
+  margin: 0 0 12px;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
 .nutrition-bar {
   display: flex;
   flex-wrap: wrap;

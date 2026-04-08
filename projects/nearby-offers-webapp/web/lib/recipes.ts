@@ -30,7 +30,7 @@ export const RECIPES: Recipe[] = [
     subtitle: 'Broccoli, hvidløg og flødesauce',
     time: '20 min',
     servings: 2,
-    nutrition: { kj: 2800, fat: 18, carbs: 65, protein: 38, fiber: 4 },
+    nutrition: { kj: 2680, fat: 10, carbs: 84, protein: 52, fiber: 3 },
     ingredients: [
       { name: 'Kyllingekød', quantity: '300g', note: 'tilbud' },
       { name: 'Pasta', quantity: '200g', note: 'penne eller fusilli' },
@@ -54,7 +54,7 @@ export const RECIPES: Recipe[] = [
     subtitle: 'Spidskål, soja og honning',
     time: '15 min',
     servings: 2,
-    nutrition: { kj: 2600, fat: 14, carbs: 70, protein: 32, fiber: 3 },
+    nutrition: { kj: 2630, fat: 16, carbs: 86, protein: 34, fiber: 2 },
     ingredients: [
       { name: 'Hakket svinekød', quantity: '300g', note: 'tilbud' },
       { name: 'Ris', quantity: '200g' },
@@ -79,7 +79,7 @@ export const RECIPES: Recipe[] = [
     subtitle: 'Løg, hvidløg og flåede tomater',
     time: '20 min',
     servings: 2,
-    nutrition: { kj: 3000, fat: 20, carbs: 62, protein: 36, fiber: 5 },
+    nutrition: { kj: 2970, fat: 22, carbs: 83, protein: 44, fiber: 3 },
     ingredients: [
       { name: 'Hakket oksekød', quantity: '300g', note: 'tilbud' },
       { name: 'Pasta', quantity: '200g', note: 'spaghetti eller penne' },
@@ -104,7 +104,7 @@ export const RECIPES: Recipe[] = [
     subtitle: 'Spidskål, tomat, agurk og dressing',
     time: '15 min',
     servings: 2,
-    nutrition: { kj: 2700, fat: 16, carbs: 55, protein: 34, fiber: 4 },
+    nutrition: { kj: 2310, fat: 22, carbs: 56, protein: 32, fiber: 2 },
     ingredients: [
       { name: 'Hakket kalv/flæsk', quantity: '300g', note: 'tilbud' },
       { name: 'Tortilla wraps', quantity: '4 stk' },
