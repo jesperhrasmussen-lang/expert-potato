@@ -18,6 +18,8 @@ TJEK_DEALERS = {
     'brugsen': 'd311fg',
     'superbrugsen': '0b1e8',
     '365discount': 'DWZE1w',
+    'bilka': '93f13',
+    'kvickly': 'c1edq',
 }
 
 IPAPER_URLS = {
