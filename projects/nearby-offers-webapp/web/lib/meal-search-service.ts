@@ -258,6 +258,14 @@ function buildCandidatesForStoreSet(params: {
       continue;
     }
 
+    // Skip two-store combos where only one store contributes real (non-estimated) offers
+    if (storeSet.stores.length === 2) {
+      const realOfferStores = new Set(
+        combination.filter((c) => !c.estimated).map((c) => c.store.storeId),
+      );
+      if (realOfferStores.size < 2) continue;
+    }
+
     const pricing = computeMealPricing({
       recipeTemplate,
       selectedIngredients: combination.map<SelectedRecipeIngredient>((choice) => ({

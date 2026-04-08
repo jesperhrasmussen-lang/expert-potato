@@ -45,11 +45,15 @@ FAMILY_DEFS: Dict[str, Dict[str, Any]] = {
         'label': 'Skyr',
         'queries': ['skyr'],
     },
+    'chicken-fillet': {
+        'label': 'Kyllingefilet',
+        'queries': ['kyllingefilet', 'kyllingekød', 'kyllingebrystfilet', 'kyllingebryst'],
+    },
 }
 
 VEGETABLE_FAMILIES = {'broccoli', 'cauliflower', 'white-cabbage', 'red-cabbage'}
 DAIRY_FAMILIES = {'heavy-cream', 'creme-fraiche', 'skyr'}
-MEAT_FAMILIES = {'minced-beef', 'minced-pork', 'minced-veal-pork'}
+MEAT_FAMILIES = {'minced-beef', 'minced-pork', 'minced-veal-pork', 'chicken-fillet'}
 
 
 def clean_text(value: Any) -> str:
@@ -107,6 +111,8 @@ def text_matches_family(text: Any, family: str) -> bool:
         return 'creme fraiche' in low or 'cremefraiche' in low
     if family == 'skyr':
         return 'skyr' in low
+    if family == 'chicken-fillet':
+        return 'kylling' in low and ('filet' in low or 'bryst' in low or 'koed' in low)
     return False
 
 
