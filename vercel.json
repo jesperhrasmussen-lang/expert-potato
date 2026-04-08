@@ -1,0 +1,6 @@
+{
+  "buildCommand": "cd projects/nearby-offers-webapp/web && npm install && npm run build",
+  "outputDirectory": "projects/nearby-offers-webapp/web/.next",
+  "framework": "nextjs",
+  "installCommand": "cd projects/nearby-offers-webapp/web && npm install"
+}
