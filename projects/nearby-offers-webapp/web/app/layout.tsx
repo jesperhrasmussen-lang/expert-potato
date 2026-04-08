@@ -2,13 +2,13 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Nearby Offers',
-  description: 'Find the best nearby supermarket offers from the existing offers database.',
+  title: 'Din mor er sulten',
+  description: 'Find de billigste måltider ud fra aktuelle supermarkedstilbud nær dig.',
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en">
+    <html lang="da">
       <body>
         <div className="app-shell">
           <div className="app-container">

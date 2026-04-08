@@ -17,12 +17,12 @@ function SearchSummaryBanner({ request }: { request: MealSearchRequest }) {
   return (
     <header className="summary-bar summary-bar-compact">
       <div>
-        <p className="summary-eyebrow">Din sogning</p>
+        <p className="summary-eyebrow">Din søgning</p>
         <h1 className="summary-address">{request.address}</h1>
-        <p className="summary-subline">10 billigste maltider pa tvaers af kaeder</p>
+        <p className="summary-subline">Billigste måltider på tværs af kæder</p>
         <div className="summary-chip-row">
           <span className="badge badge-neutral">
-            {request.includeStorePairs ? '1-2 kaeder' : 'Kun 1 kaede'}
+            {request.includeStorePairs ? '1-2 kæder' : 'Kun 1 kæde'}
           </span>
           <span className="badge badge-neutral">
             {PORTION_LABELS[request.portionSize] || 'Medium'} portion
@@ -30,7 +30,7 @@ function SearchSummaryBanner({ request }: { request: MealSearchRequest }) {
         </div>
       </div>
       <Link className="secondary-button link-button" href="/">
-        Rediger sogning
+        Ny søgning
       </Link>
     </header>
   );
@@ -79,10 +79,10 @@ export function MealResultsPageClient({ initialRequest }: { initialRequest: Meal
         {summary}
         <section className="panel state-panel" aria-live="polite" aria-busy="true">
           <div className="section-head">
-            <h2>Finder maltider</h2>
+            <h2>Finder måltider</h2>
           </div>
           <p className="page-copy">
-            Finder de billigste mulige maltider pa tvaers af kaedernes tilbud...
+            Finder de billigste måltider på tværs af kædernes tilbud...
           </p>
         </section>
       </>
@@ -95,15 +95,15 @@ export function MealResultsPageClient({ initialRequest }: { initialRequest: Meal
         {summary}
         <section className="panel state-panel" aria-live="polite">
           <div className="section-head">
-            <h2>Sogning fejlede</h2>
+            <h2>Søgning fejlede</h2>
           </div>
           <p className="page-copy">{error}</p>
           <div className="state-actions">
             <button className="primary-button" type="button" onClick={() => setAttempt((value) => value + 1)}>
-              Prov igen
+              Prøv igen
             </button>
             <Link className="secondary-button link-button" href="/">
-              Rediger sogning
+              Ny søgning
             </Link>
           </div>
         </section>
