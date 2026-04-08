@@ -3,48 +3,47 @@
 import Link from 'next/link';
 import { useState } from 'react';
 
-import type { BasketLine, MealCandidate, MealSearchResponse } from '@/types/meal-optimizer-types';
+import type { MeatDeal, MealCandidate, MealSearchResponse } from '@/types/meal-optimizer-types';
+import { getRecipeForMeat } from '@/lib/recipes';
+import type { Recipe } from '@/lib/recipes';
 
-function formatDistance(distanceMeters: number | null) {
-  if (distanceMeters === null) return '?';
-  if (distanceMeters < 1000) return `${distanceMeters}m`;
-  return `${(distanceMeters / 1000).toFixed(1)}km`;
+function formatDistance(meters: number) {
+  if (meters < 1000) return `${meters}m`;
+  return `${(meters / 1000).toFixed(1)}km`;
 }
 
-function formatPrice(price: number) {
-  return `${price.toFixed(0)}kr`;
+function extractBestDeals(candidates: MealCandidate[]): MeatDeal[] {
+  const bestByMeat = new Map<string, MeatDeal>();
+
+  for (const c of candidates) {
+    const meatLine = c.basketLines.find((l) =>
+      ['minced-beef', 'minced-pork', 'minced-veal-pork', 'chicken-fillet'].includes(l.ingredientFamilyId),
+    );
+    if (!meatLine) continue;
+
+    const deal: MeatDeal = {
+      meatFamilyId: meatLine.ingredientFamilyId,
+      meatFamilyName: meatLine.ingredientFamilyName,
+      productName: meatLine.productName,
+      priceDkk: meatLine.packagePriceDkk,
+      packageGrams: meatLine.packageQuantity,
+      chainId: c.storesUsed[0]?.chainId || '',
+      storeName: c.storesUsed[0]?.storeName || '',
+      distanceMeters: c.storesUsed[0]?.distanceMeters || 0,
+    };
+
+    const existing = bestByMeat.get(deal.meatFamilyId);
+    if (!existing || deal.priceDkk < existing.priceDkk) {
+      bestByMeat.set(deal.meatFamilyId, deal);
+    }
+  }
+
+  return [...bestByMeat.values()].sort((a, b) => a.priceDkk - b.priceDkk);
 }
 
-function formatGeneratedAt(value: string) {
-  return new Date(value).toLocaleString('da-DK', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-}
-
-function renderStores(candidate: MealCandidate) {
-  return candidate.storesUsed.map((store) => store.storeName).join(' + ');
-}
-
-function renderStoreDistance(candidate: MealCandidate) {
-  const nearest = candidate.storesUsed[0];
-  return nearest ? formatDistance(nearest.distanceMeters) : '';
-}
-
-function BasketLineRow({ line, showStore }: { line: BasketLine; showStore: boolean }) {
-  return (
-    <div className={`detail-note${line.estimated ? ' detail-note-estimated' : ''}`}>
-      <strong>{line.ingredientFamilyName}{showStore ? ` (${line.storeName})` : ''}:</strong> {line.productName} · {line.estimated ? '~' : ''}{formatPrice(line.packagePriceDkk)} · bruger{' '}
-      {line.requiredAmountForRecipe}{line.requiredAmountUnit} · rest {Math.round(line.leftoverAmount)}{line.leftoverUnit}
-    </div>
-  );
-}
-
-function MealCard({ candidate, rank }: { candidate: MealCandidate; rank: number }) {
+function DealCard({ deal, rank }: { deal: MeatDeal; rank: number }) {
   const [expanded, setExpanded] = useState(false);
+  const recipe = getRecipeForMeat(deal.meatFamilyId);
 
   return (
     <article
@@ -57,112 +56,93 @@ function MealCard({ candidate, rank }: { candidate: MealCandidate; rank: number 
       <div className="meal-card-summary">
         <span className="meal-card-rank">{rank}</span>
         <div className="meal-card-lines">
-          <p className="meal-card-line1">
-            {renderStores(candidate)} · {renderStoreDistance(candidate)}
-            {candidate.hasEstimatedPrice && <span className="badge badge-warn meal-card-est-badge">est. pris</span>}
-          </p>
           <p className="meal-card-line2">
-            {candidate.recipeName} · {candidate.hasEstimatedPrice ? '~' : ''}{formatPrice(candidate.pricePerMealDkk)}/m · {formatPrice(candidate.basketCostDkk)} · {candidate.servingsPerBatch}m
+            {deal.meatFamilyName} · {deal.priceDkk}kr / {deal.packageGrams}g
+          </p>
+          <p className="meal-card-line1">
+            {deal.storeName} · {formatDistance(deal.distanceMeters)}
           </p>
         </div>
       </div>
 
-      {expanded && (
-        <div className="meal-card-detail">
-          {candidate.pantryItems && candidate.pantryItems.length > 0 && (
-            <div className="meal-card-pantry">
-              <span className="meal-card-pantry-label">Derhjemme:</span>
-              {candidate.pantryItems.map((item) => (
-                <span key={item.displayName} className="badge badge-neutral">
-                  {item.displayName}{item.note ? ` (${item.note})` : ''}
-                </span>
-              ))}
-            </div>
-          )}
-          <div className="stack-list">
-            {candidate.basketLines.map((line) => (
-              <BasketLineRow key={`${candidate.candidateId}-${line.ingredientFamilyId}-${line.storeId}`} line={line} showStore={candidate.storesUsed.length > 1} />
-            ))}
-          </div>
-        </div>
+      {expanded && recipe && (
+        <RecipeDetail recipe={recipe} />
       )}
     </article>
+  );
+}
+
+function RecipeDetail({ recipe }: { recipe: Recipe }) {
+  return (
+    <div className="meal-card-detail">
+      <div className="recipe-header">
+        <h3 className="recipe-title">{recipe.title}</h3>
+        <p className="recipe-subtitle">{recipe.subtitle} · {recipe.time}</p>
+      </div>
+
+      <div className="recipe-section">
+        <span className="meal-card-pantry-label">Ingredienser</span>
+        <ul className="recipe-list">
+          {recipe.ingredients.map((item, i) => (
+            <li key={i}>{item}</li>
+          ))}
+        </ul>
+      </div>
+
+      <div className="recipe-section">
+        <span className="meal-card-pantry-label">Fremgangsmåde</span>
+        <ol className="recipe-list recipe-steps">
+          {recipe.steps.map((step, i) => (
+            <li key={i}>{step}</li>
+          ))}
+        </ol>
+      </div>
+    </div>
   );
 }
 
 function EmptyState() {
   return (
     <div className="empty-box empty-state-large">
-      <p><strong>Fa tilbud denne uge</strong></p>
-      <p>Der er for fa tilbud til at sammensaette maltider lige nu. Prov igen mandag, nar nye tilbudsaviser udkommer.</p>
+      <p><strong>Få tilbud denne uge</strong></p>
+      <p>Der er for få tilbud til at vise resultater lige nu. Prøv igen mandag, når nye tilbudsaviser udkommer.</p>
     </div>
   );
 }
 
 export function MealResultsView({ data }: { data: MealSearchResponse }) {
-  const hasEnoughResults = data.candidates.length >= 3;
+  const deals = extractBestDeals(data.candidates);
 
   return (
     <div className="results-layout">
       <header className="summary-bar">
         <div>
-          <p className="summary-eyebrow">Billigste maltider</p>
+          <p className="summary-eyebrow">Billigste måltider</p>
           <h1 className="summary-address">{data.resolvedAddress}</h1>
           <p className="summary-subline">
-            {data.summary.totalCandidates} maltider fundet · {data.summary.totalStoresInScope} kaeder ·{' '}
-            {data.search.includeStorePairs ? 'to-kaede-kombinationer tilladt' : 'kun enkelkaeder'}
+            Tilføj selvvalgte grøntsager (~25kr) og sauce/tilbehør fra skabet
           </p>
         </div>
         <Link className="secondary-button link-button" href="/">
-          Rediger sogning
+          Ny søgning
         </Link>
       </header>
 
-      <section className="panel">
-        <div className="section-head">
-          <h2>Maltidskandidater</h2>
-          <span>{data.candidates.length} fund</span>
-        </div>
-
-        {hasEnoughResults ? (
+      {deals.length > 0 ? (
+        <section className="panel">
+          <div className="section-head">
+            <h2>Kødtilbud nær dig</h2>
+            <span>Tryk for opskrift</span>
+          </div>
           <div className="stack-list">
-            {data.candidates.map((candidate, index) => (
-              <MealCard key={candidate.candidateId} candidate={candidate} rank={index + 1} />
+            {deals.map((deal, i) => (
+              <DealCard key={deal.meatFamilyId} deal={deal} rank={i + 1} />
             ))}
           </div>
-        ) : data.candidates.length > 0 ? (
-          <>
-            <div className="stack-list">
-              {data.candidates.map((candidate, index) => (
-                <MealCard key={candidate.candidateId} candidate={candidate} rank={index + 1} />
-              ))}
-            </div>
-            <EmptyState />
-          </>
-        ) : (
-          <EmptyState />
-        )}
-      </section>
-
-      <section className="panel transparency-panel">
-        <div className="section-head">
-          <h2>Resultatkvalitet</h2>
-        </div>
-        <div className="transparency-grid">
-          <div>
-            <p className="transparency-label">Senest opdateret</p>
-            <p>{formatGeneratedAt(data.summary.generatedAt)}</p>
-          </div>
-          <div>
-            <p className="transparency-label">Kaeder med afstandsdata</p>
-            <p>{data.summary.totalStoresInScope}</p>
-          </div>
-          <div>
-            <p className="transparency-label">Butikspar vurderet</p>
-            <p>{data.summary.totalStorePairsConsidered}</p>
-          </div>
-        </div>
-      </section>
+        </section>
+      ) : (
+        <EmptyState />
+      )}
     </div>
   );
 }

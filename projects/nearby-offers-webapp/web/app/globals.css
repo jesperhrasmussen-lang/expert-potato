@@ -643,6 +643,36 @@ button, input {
   margin: 4px 0;
 }
 
+.recipe-header {
+  margin-bottom: 4px;
+}
+
+.recipe-title {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.recipe-subtitle {
+  margin: 2px 0 0;
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
+.recipe-section {
+  margin-top: 12px;
+}
+
+.recipe-list {
+  margin: 6px 0 0;
+  padding-left: 20px;
+  font-size: 0.92rem;
+  line-height: 1.6;
+}
+
+.recipe-steps li {
+  padding-left: 4px;
+}
+
 .meal-card-est-badge {
   margin-left: 8px;
   font-size: 0.72rem;

@@ -137,3 +137,14 @@ export interface MealSearchResponse {
   summary: MealSearchSummary;
 }
 
+export interface MeatDeal {
+  meatFamilyId: string;
+  meatFamilyName: string;
+  productName: string;
+  priceDkk: number;
+  packageGrams: number;
+  chainId: string;
+  storeName: string;
+  distanceMeters: number;
+}
+
