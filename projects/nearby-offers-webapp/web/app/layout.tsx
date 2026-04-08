@@ -11,7 +11,10 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html lang="en">
       <body>
         <div className="app-shell">
-          <div className="app-container">{children}</div>
+          <div className="app-container">
+            <header className="site-header">Din mor er sulten</header>
+            {children}
+          </div>
         </div>
       </body>
     </html>

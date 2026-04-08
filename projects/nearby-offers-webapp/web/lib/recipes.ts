@@ -23,16 +23,22 @@ export interface Recipe {
   steps: string[];
 }
 
+// Nutrition per serving. Fat includes fat from meat.
+// Kylling 23g protein/100g, 1g fat/100g
+// Oksekød 14%: 19g protein/100g, 14g fat/100g
+// Svinekød 10%: 17g protein/100g, 10g fat/100g
+// Kalv/flæsk: 16g protein/100g, 12g fat/100g
+
 export const RECIPES: Recipe[] = [
   {
     meatFamily: 'chicken-fillet',
     title: 'Cremet kylling med pasta',
-    subtitle: 'Broccoli, hvidløg og flødesauce',
+    subtitle: 'Broccoli, hvidløg og flødesauce · 2 personer',
     time: '20 min',
     servings: 2,
-    nutrition: { kj: 2680, fat: 10, carbs: 84, protein: 52, fiber: 3 },
+    nutrition: { kj: 2800, fat: 16, carbs: 84, protein: 46, fiber: 3 },
     ingredients: [
-      { name: 'Kyllingekød', quantity: '300g', note: 'tilbud' },
+      { name: 'Kyllingekød', quantity: '250g', note: 'tilbud' },
       { name: 'Pasta', quantity: '200g', note: 'penne eller fusilli' },
       { name: 'Broccoli', quantity: '200g', note: 'i små buketter' },
       { name: 'Fløde', quantity: '1 dl' },
@@ -51,12 +57,12 @@ export const RECIPES: Recipe[] = [
   {
     meatFamily: 'minced-pork',
     title: 'Asiatisk wok med ris',
-    subtitle: 'Spidskål, soja og honning',
+    subtitle: 'Spidskål, soja og honning · 2 personer',
     time: '15 min',
     servings: 2,
-    nutrition: { kj: 2630, fat: 16, carbs: 86, protein: 34, fiber: 2 },
+    nutrition: { kj: 3030, fat: 25, carbs: 86, protein: 38, fiber: 2 },
     ingredients: [
-      { name: 'Hakket svinekød', quantity: '300g', note: 'tilbud' },
+      { name: 'Hakket svinekød', quantity: '350g', note: 'tilbud' },
       { name: 'Ris', quantity: '200g' },
       { name: 'Spidskål', quantity: '200g', note: 'i strimler' },
       { name: 'Soja', quantity: '2 spsk' },
@@ -76,10 +82,10 @@ export const RECIPES: Recipe[] = [
   {
     meatFamily: 'minced-beef',
     title: 'Kødsauce med pasta',
-    subtitle: 'Løg, hvidløg og flåede tomater',
+    subtitle: 'Løg, hvidløg og flåede tomater · 2 personer',
     time: '20 min',
     servings: 2,
-    nutrition: { kj: 2970, fat: 22, carbs: 83, protein: 44, fiber: 3 },
+    nutrition: { kj: 3230, fat: 29, carbs: 83, protein: 44, fiber: 2 },
     ingredients: [
       { name: 'Hakket oksekød', quantity: '300g', note: 'tilbud' },
       { name: 'Pasta', quantity: '200g', note: 'spaghetti eller penne' },
@@ -101,12 +107,12 @@ export const RECIPES: Recipe[] = [
   {
     meatFamily: 'minced-veal-pork',
     title: 'Tortilla wraps med krydret kød',
-    subtitle: 'Spidskål, tomat, agurk og dressing',
+    subtitle: 'Spidskål, tomat, agurk og dressing · 2 personer',
     time: '15 min',
     servings: 2,
-    nutrition: { kj: 2310, fat: 22, carbs: 56, protein: 32, fiber: 2 },
+    nutrition: { kj: 2880, fat: 35, carbs: 57, protein: 36, fiber: 2 },
     ingredients: [
-      { name: 'Hakket kalv/flæsk', quantity: '300g', note: 'tilbud' },
+      { name: 'Hakket kalv/flæsk', quantity: '350g', note: 'tilbud' },
       { name: 'Tortilla wraps', quantity: '4 stk' },
       { name: 'Spidskål', quantity: '150g', note: 'fintskåret' },
       { name: 'Tomat', quantity: '1 stk', note: 'i tern' },

@@ -46,6 +46,13 @@ button, input {
   margin: 0 auto;
 }
 
+.site-header {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 16px;
+  color: var(--text);
+}
+
 .page-stack,
 .results-layout,
 .home-page {
