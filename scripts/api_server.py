@@ -19,7 +19,7 @@ from pydantic import BaseModel
 SCRIPTS_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(SCRIPTS_DIR))
 
-from find_nearby_offers_dk import geocode, nearby_places, dedupe_chains, apply_access_filters, add_groups
+from find_nearby_offers_dk import geocode, nearby_places, dedupe_chains, apply_access_filters
 from ingredient_catalog_dk import query_to_family
 
 DB_PATH = SCRIPTS_DIR.parent / "projects" / "nearby-offers-webapp" / "data" / "nearby-offers.db"
@@ -74,32 +74,46 @@ async def meal_search(req: MealSearchRequest):
     for family in catalog.get("ingredientFamilies", []):
         queries.extend(family.get("searchTerms", []))
 
-    # 6. Query DB for offers
+    # 6. Query DB for offers — get all active offers and match by family + product name
     today = datetime.date.today().isoformat()
     conn = sqlite3.connect(str(DB_PATH))
     conn.row_factory = sqlite3.Row
 
-    offers = []
-    for query in queries:
-        family_id = query_to_family(query)
-        sql = """
-            SELECT * FROM offers
-            WHERE query_family = ?
-            AND expires_at >= ?
-            AND offer_state = 'active'
-        """
-        rows = conn.execute(sql, [family_id, today]).fetchall()
-        for row in rows:
-            offer = dict(row)
-            offer["query"] = query
-            offers.append(offer)
-
+    all_active = conn.execute(
+        "SELECT * FROM offers WHERE expires_at >= ? AND offer_state = 'active'",
+        [today],
+    ).fetchall()
     conn.close()
 
-    # 7. Add comparison groups
-    offers = add_groups(offers)
+    # Build family ID set from catalog
+    family_ids = {f["id"] for f in catalog.get("ingredientFamilies", [])}
 
-    # 8. Map to frontend format
+    offers = []
+    seen_keys = set()
+    for row in all_active:
+        offer = dict(row)
+        qf = offer.get("query_family", "")
+
+        # Direct family match
+        if qf in family_ids:
+            key = (offer.get("offer_key", ""), qf)
+            if key not in seen_keys:
+                seen_keys.add(key)
+                offer["query"] = qf
+                offers.append(offer)
+
+        # Cross-match: if product name contains "kylling", also emit as chicken-fillet
+        pname = (offer.get("product_name") or "").lower()
+        if "chicken-fillet" in family_ids and "kylling" in pname:
+            key = (offer.get("offer_key", ""), "chicken-fillet")
+            if key not in seen_keys:
+                seen_keys.add(key)
+                chicken_offer = dict(offer)
+                chicken_offer["query"] = "kyllingekød"
+                chicken_offer["query_family"] = "chicken-fillet"
+                offers.append(chicken_offer)
+
+    # 7. Map to frontend format (skip add_groups — we set comparisonGroup from query_family directly)
     mapped_offers = []
     for o in offers:
         mapped_offers.append({
@@ -119,7 +133,7 @@ async def meal_search(req: MealSearchRequest):
             "offerStartDate": o.get("offer_start_at"),
             "offerEndDate": o.get("offer_end_at"),
             "offerState": o.get("offer_state", "active"),
-            "comparisonGroup": o.get("comparisonGroup") or o.get("query_family"),
+            "comparisonGroup": o.get("query_family"),
             "sourceKind": o.get("source_kind"),
             "confidence": o.get("confidence"),
         })
