@@ -11,12 +11,20 @@ function formatDistance(meters: number) {
   return `${meters} meter`;
 }
 
+// Meat grams needed per recipe batch (2 servings), by portion size
+const MEAT_GRAMS_PER_BATCH: Record<string, Record<SizeKey, number>> = {
+  'chicken-fillet':   { small: 200, large: 350, combined: 275 },
+  'minced-pork':      { small: 250, large: 450, combined: 350 },
+  'minced-beef':      { small: 200, large: 400, combined: 300 },
+  'minced-veal-pork': { small: 250, large: 450, combined: 350 },
+};
+
 interface ExtendedDeal extends MeatDeal {
   servings: number;
   pricePerMeal: number;
 }
 
-function extractBestDeals(candidates: MealCandidate[]): ExtendedDeal[] {
+function extractBestDeals(candidates: MealCandidate[], sizeKey: SizeKey): ExtendedDeal[] {
   const bestByMeat = new Map<string, ExtendedDeal>();
 
   for (const c of candidates) {
@@ -25,9 +33,9 @@ function extractBestDeals(candidates: MealCandidate[]): ExtendedDeal[] {
     );
     if (!meatLine) continue;
 
-    const recipes = getRecipesForMeat(meatLine.ingredientFamilyId);
-    const servings = recipes[0]?.servings || c.servingsPerBatch || 2;
-    const pricePerMeal = Math.round(meatLine.packagePriceDkk / servings);
+    const meatPerBatch = MEAT_GRAMS_PER_BATCH[meatLine.ingredientFamilyId]?.[sizeKey] || 300;
+    const meatCost = (meatPerBatch / meatLine.packageQuantity) * meatLine.packagePriceDkk;
+    const pricePerMeal = Math.round(meatCost / 2);
 
     const deal: ExtendedDeal = {
       meatFamilyId: meatLine.ingredientFamilyId,
@@ -38,17 +46,17 @@ function extractBestDeals(candidates: MealCandidate[]): ExtendedDeal[] {
       chainId: c.storesUsed[0]?.chainId || '',
       storeName: c.storesUsed[0]?.storeName || '',
       distanceMeters: c.storesUsed[0]?.distanceMeters || 0,
-      servings,
+      servings: 2,
       pricePerMeal,
     };
 
     const existing = bestByMeat.get(deal.meatFamilyId);
-    if (!existing || deal.priceDkk < existing.priceDkk) {
+    if (!existing || deal.pricePerMeal < existing.pricePerMeal) {
       bestByMeat.set(deal.meatFamilyId, deal);
     }
   }
 
-  return [...bestByMeat.values()].sort((a, b) => a.priceDkk - b.priceDkk);
+  return [...bestByMeat.values()].sort((a, b) => a.pricePerMeal - b.pricePerMeal);
 }
 
 type CardState = 'collapsed' | 'choosing' | 'viewing';
@@ -207,8 +215,8 @@ function EmptyState() {
 }
 
 export function MealResultsView({ data, organicOnly, portionSize }: { data: MealSearchResponse; organicOnly?: boolean; portionSize?: PortionSize }) {
-  const deals = extractBestDeals(data.candidates);
   const sizeKey: SizeKey = portionSize === 'large' ? 'large' : portionSize === 'combined' ? 'combined' : 'small';
+  const deals = extractBestDeals(data.candidates, sizeKey);
 
   return (
     <div className="results-layout">
