@@ -8,10 +8,10 @@ import type { MealSearchRequest, MealSearchResponse } from '@/types/meal-optimiz
 import { MealResultsView } from '@/components/meal-results-view';
 
 const PORTION_LABELS: Record<string, string> = {
-  small: 'Soft girl',
+  small: 'Lille portion',
   medium: 'Medium',
-  large: 'Gymbro',
-  combined: 'Soft girl + gymbro',
+  large: 'Stor portion',
+  combined: 'Lille + stor portion',
 };
 
 function SearchSummaryBanner({ request }: { request: MealSearchRequest }) {

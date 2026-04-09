@@ -153,8 +153,8 @@ function RecipeDetail({ recipe, sizeKey }: { recipe: Recipe; sizeKey: SizeKey })
 
       {isCombined ? (
         <div className="nutrition-stack">
-          <NutritionBar label="Soft girl:" nutrition={recipe.portions.small.nutrition} />
-          <NutritionBar label="Gymbro:" nutrition={recipe.portions.large.nutrition} />
+          <NutritionBar label="Lille portion:" nutrition={recipe.portions.small.nutrition} />
+          <NutritionBar label="Stor portion:" nutrition={recipe.portions.large.nutrition} />
         </div>
       ) : (
         <NutritionBar label="Pr. portion:" nutrition={variant.nutrition} />
