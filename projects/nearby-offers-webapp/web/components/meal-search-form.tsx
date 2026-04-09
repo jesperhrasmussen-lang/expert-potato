@@ -184,7 +184,7 @@ export function MealSearchForm() {
     setShowLocationOption(false);
 
     navigator.geolocation.getCurrentPosition(
-      (position) => {
+      async (position) => {
         const { latitude, longitude } = position.coords;
         // Check if location is roughly in Denmark (lat 54.5-57.8, lon 8-15.2)
         if (latitude < 54.5 || latitude > 57.8 || longitude < 8 || longitude > 15.2) {
@@ -192,6 +192,26 @@ export function MealSearchForm() {
           setLocating(false);
           return;
         }
+
+        // Reverse geocode via DAWA to get a real Danish address
+        try {
+          const res = await fetch(
+            `https://api.dataforsyningen.dk/adgangsadresser/reverse?x=${longitude}&y=${latitude}&struktur=mini`,
+          );
+          if (res.ok) {
+            const data = await res.json();
+            const addr = data.betegnelse;
+            if (addr) {
+              setAddress(addr);
+              setLocating(false);
+              return;
+            }
+          }
+        } catch {
+          // DAWA reverse failed — fall back to coordinates
+        }
+
+        // Fallback: use raw coordinates if DAWA reverse fails
         setAddress(`${latitude.toFixed(5)}, ${longitude.toFixed(5)}`);
         setLocating(false);
       },
