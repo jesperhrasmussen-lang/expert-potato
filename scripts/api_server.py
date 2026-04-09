@@ -62,6 +62,9 @@ class MealSearchRequest(BaseModel):
 
 @app.post("/api/meal-search")
 async def meal_search(req: MealSearchRequest):
+    if not req.address or not req.address.strip():
+        raise HTTPException(status_code=422, detail="address is required")
+
     if not Path(DB_PATH).exists():
         raise HTTPException(status_code=503, detail="Offer database not found")
 
