@@ -5,7 +5,7 @@ export default function HomePage() {
     <main className="page-stack">
       <section className="intro-block">
         <p className="page-subtitle">
-          Find det billigste kød fra lokale supermarkeder på sekunder.
+          Billigste kødtilbud nær dig med nemme og lækre opskrifter
         </p>
       </section>
       <MealSearchForm />

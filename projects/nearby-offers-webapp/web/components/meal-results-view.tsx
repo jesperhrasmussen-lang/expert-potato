@@ -85,10 +85,10 @@ function DealCard({ deal, rank, organicOnly, sizeKey }: { deal: ExtendedDeal; ra
         <span className="meal-card-rank">{rank}</span>
         <div className="meal-card-lines">
           <p className="meal-card-line2">
-            {organicOnly ? `Økologisk ${deal.meatFamilyName.toLowerCase()}` : deal.meatFamilyName} · {deal.priceDkk}kr
+            <strong>~{deal.pricePerMeal}kr/måltid</strong> · {organicOnly ? `Økologisk ${deal.meatFamilyName.toLowerCase()}` : deal.meatFamilyName} · {deal.priceDkk}kr
           </p>
           <p className="meal-card-line1">
-            {deal.storeName} · {formatDistance(deal.distanceMeters)} · ~{deal.pricePerMeal}kr/måltid
+            {deal.storeName} · {formatDistance(deal.distanceMeters)}
           </p>
         </div>
       </div>
@@ -214,7 +214,8 @@ export function MealResultsView({ data, organicOnly, portionSize }: { data: Meal
     <div className="results-layout">
       {deals.length > 0 ? (
         <section className="panel">
-          <div className="section-head section-head-right">
+          <div className="section-head">
+            <h2 className="section-title-sm">Billigst pr. måltid</h2>
             <Link className="link-button section-back-link" href="/">Ny søgning</Link>
           </div>
           <div className="stack-list">
