@@ -24,7 +24,7 @@ const MIN_RESULTS_BEFORE_FALLBACK = 3;
 const PORTION_MULTIPLIERS: Record<PortionSize, { meat: number; vegetable: number }> = {
   small:  { meat: 125 / 150, vegetable: 250 / 300 },
   medium: { meat: 1,         vegetable: 1 },
-  large:  { meat: 180 / 150, vegetable: 350 / 300 },
+  large:  { meat: 210 / 150, vegetable: 400 / 300 },
 };
 const PIECE_GRAMS_ASSUMPTIONS: Record<string, number> = {};
 

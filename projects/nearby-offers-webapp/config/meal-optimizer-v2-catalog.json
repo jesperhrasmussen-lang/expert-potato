@@ -49,7 +49,7 @@
   "portionProfiles": {
     "small":  { "meat": { "value": 125, "unit": "g" } },
     "medium": { "meat": { "value": 150, "unit": "g" } },
-    "large":  { "meat": { "value": 180, "unit": "g" } }
+    "large":  { "meat": { "value": 210, "unit": "g" } }
   },
   "recipes": [
     {

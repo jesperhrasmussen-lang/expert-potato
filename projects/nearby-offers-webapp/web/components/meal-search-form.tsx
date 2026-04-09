@@ -105,6 +105,11 @@ function useAddressAutocomplete() {
   return { suggestions, showSuggestions, fetchSuggestions, clearSuggestions, setShowSuggestions };
 }
 
+interface LocationOption {
+  type: 'geolocation';
+  label: string;
+}
+
 export function MealSearchForm() {
   const router = useRouter();
 
@@ -115,6 +120,7 @@ export function MealSearchForm() {
   const [saveOnDevice, setSaveOnDevice] = useState(false);
   const [locating, setLocating] = useState(false);
   const [locationError, setLocationError] = useState<string | null>(null);
+  const [showLocationOption, setShowLocationOption] = useState(false);
 
   const { suggestions, showSuggestions, fetchSuggestions, clearSuggestions, setShowSuggestions } =
     useAddressAutocomplete();
@@ -136,6 +142,7 @@ export function MealSearchForm() {
     function handleClick(e: MouseEvent) {
       if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
         setShowSuggestions(false);
+        setShowLocationOption(false);
       }
     }
     document.addEventListener('mousedown', handleClick);
@@ -146,12 +153,26 @@ export function MealSearchForm() {
 
   function onAddressChange(value: string) {
     setAddress(value);
+    if (value.trim().length < 3) {
+      setShowLocationOption(true);
+    } else {
+      setShowLocationOption(false);
+    }
     fetchSuggestions(value);
+  }
+
+  function onAddressFocus() {
+    if (suggestions.length > 0) {
+      setShowSuggestions(true);
+    } else if (address.trim().length < 3) {
+      setShowLocationOption(true);
+    }
   }
 
   function onSelectSuggestion(suggestion: AddressSuggestion) {
     setAddress(suggestion.tekst);
     clearSuggestions();
+    setShowLocationOption(false);
   }
 
   function useCurrentLocation() {
@@ -163,6 +184,7 @@ export function MealSearchForm() {
     setLocating(true);
     setLocationError(null);
     clearSuggestions();
+    setShowLocationOption(false);
 
     navigator.geolocation.getCurrentPosition(
       (position) => {
@@ -183,6 +205,7 @@ export function MealSearchForm() {
     if (!canSubmit) return;
 
     clearSuggestions();
+    setShowLocationOption(false);
 
     if (saveOnDevice) {
       savePrefs({ address, includeStorePairs, portionSize, organicOnly });
@@ -200,9 +223,11 @@ export function MealSearchForm() {
     router.push(`/results?${params.toString()}`);
   }
 
+  const showDropdown = showSuggestions || (showLocationOption && !showSuggestions);
+
   return (
     <form className="search-card" onSubmit={onSubmit}>
-      {/* Address input with autocomplete */}
+      {/* Address input with autocomplete + geolocation */}
       <div className="field-group" ref={wrapperRef}>
         <label className="field-label" htmlFor="address">📍 Adresse</label>
         <div className="autocomplete-wrapper">
@@ -211,39 +236,57 @@ export function MealSearchForm() {
             className="text-input"
             value={address}
             onChange={(e) => onAddressChange(e.target.value)}
-            onFocus={() => { if (suggestions.length > 0) setShowSuggestions(true); }}
-            placeholder="Indtast adresse eller postnummer"
+            onFocus={onAddressFocus}
+            placeholder={locating ? 'Finder placering...' : 'Din lokation'}
             autoComplete="off"
           />
-          {showSuggestions && (
+          {showDropdown && (
             <ul className="autocomplete-list">
-              {suggestions.map((s, i) => (
-                <li key={`${s.tekst}-${i}`}>
+              {!showSuggestions && showLocationOption && (
+                <li>
                   <button
                     type="button"
-                    className="autocomplete-item"
-                    onClick={() => onSelectSuggestion(s)}
+                    className="autocomplete-item autocomplete-location"
+                    onClick={useCurrentLocation}
+                    disabled={locating}
                   >
-                    {s.tekst}
+                    📍 {locating ? 'Finder placering...' : 'Brug din nuværende lokation'}
                   </button>
                 </li>
-              ))}
+              )}
+              {showSuggestions && (
+                <>
+                  <li>
+                    <button
+                      type="button"
+                      className="autocomplete-item autocomplete-location"
+                      onClick={useCurrentLocation}
+                      disabled={locating}
+                    >
+                      📍 {locating ? 'Finder...' : 'Brug nuværende lokation'}
+                    </button>
+                  </li>
+                  {suggestions.map((s, i) => (
+                    <li key={`${s.tekst}-${i}`}>
+                      <button
+                        type="button"
+                        className="autocomplete-item"
+                        onClick={() => onSelectSuggestion(s)}
+                      >
+                        {s.tekst}
+                      </button>
+                    </li>
+                  ))}
+                </>
+              )}
             </ul>
           )}
         </div>
-        <button
-          type="button"
-          className="secondary-button location-button"
-          onClick={useCurrentLocation}
-          disabled={locating}
-        >
-          {locating ? 'Finder placering...' : 'Brug nuværende placering'}
-        </button>
         {locationError && <p className="input-error">{locationError}</p>}
       </div>
 
-      {/* Meal size + shop count side by side */}
-      <div className="toggle-row">
+      {/* Toggles — one per line, centered */}
+      <div className="toggle-stack">
         <div className="toggle-group">
           <span className="toggle-label">Måltidsstørrelse</span>
           <div className="toggle-control">
@@ -259,10 +302,11 @@ export function MealSearchForm() {
               className={`toggle-btn ${portionSize === 'large' ? 'toggle-active' : ''}`}
               onClick={() => setPortionSize('large')}
             >
-              gymbro · 3000 kJ
+              gymbro · 3500 kJ
             </button>
           </div>
         </div>
+
         <div className="toggle-group">
           <span className="toggle-label">Butikker</span>
           <div className="toggle-control">
@@ -271,21 +315,18 @@ export function MealSearchForm() {
               className={`toggle-btn ${!includeStorePairs ? 'toggle-active' : ''}`}
               onClick={() => setIncludeStorePairs(false)}
             >
-              1
+              1 butik
             </button>
             <button
               type="button"
               className={`toggle-btn ${includeStorePairs ? 'toggle-active' : ''}`}
               onClick={() => setIncludeStorePairs(true)}
             >
-              2
+              2 butikker
             </button>
           </div>
         </div>
-      </div>
 
-      {/* Organic toggle */}
-      <div className="toggle-row">
         <div className="toggle-group">
           <span className="toggle-label">Økologisk</span>
           <div className="toggle-control">

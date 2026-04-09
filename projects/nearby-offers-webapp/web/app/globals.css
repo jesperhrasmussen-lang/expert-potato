@@ -578,10 +578,9 @@ button, input {
   border-top: 1px solid var(--border);
 }
 
-.location-button {
-  width: 100%;
-  margin-top: 8px;
-  text-align: center;
+.autocomplete-location {
+  color: var(--accent);
+  font-weight: 600;
 }
 
 .input-help {
@@ -787,16 +786,19 @@ button, input {
   padding-left: 4px;
 }
 
-.toggle-row {
+.toggle-stack {
   display: flex;
-  gap: 16px;
+  flex-direction: column;
+  gap: 14px;
+  align-items: center;
 }
 
 .toggle-group {
-  flex: 1;
   display: flex;
   flex-direction: column;
   gap: 6px;
+  width: 100%;
+  max-width: 320px;
 }
 
 .toggle-label {
