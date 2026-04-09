@@ -7,9 +7,8 @@ import type { MeatDeal, MealCandidate, MealSearchResponse } from '@/types/meal-o
 import { getRecipeForMeat } from '@/lib/recipes';
 import type { Recipe } from '@/lib/recipes';
 
-function formatWalkingTime(meters: number) {
-  const minutes = Math.max(1, Math.round(meters / 80));
-  return minutes === 1 ? '1 minut' : `${minutes} minutter`;
+function formatDistance(meters: number) {
+  return `${meters} meter`;
 }
 
 interface ExtendedDeal extends MeatDeal {
@@ -71,7 +70,7 @@ function DealCard({ deal, rank }: { deal: ExtendedDeal; rank: number }) {
             {deal.meatFamilyName} · {deal.priceDkk}kr
           </p>
           <p className="meal-card-line1">
-            {deal.storeName} · {formatWalkingTime(deal.distanceMeters)} · ~{deal.pricePerMeal}kr/måltid · {deal.servings} måltider
+            {deal.storeName} · {formatDistance(deal.distanceMeters)} · ~{deal.pricePerMeal}kr/måltid · {deal.servings} måltider
           </p>
         </div>
       </div>
