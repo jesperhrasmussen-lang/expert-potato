@@ -62,6 +62,7 @@ interface RawOffer {
   offerState?: string | null;
   productUrl?: string | null;
   comparisonGroup?: string | null;
+  isOrganic?: boolean;
 }
 
 interface RawPayload {
@@ -152,6 +153,7 @@ async function fetchFromVpsApi(request: MealSearchRequest): Promise<RawPayload> 
       maxTransitMin: request.maxTransitMin,
       includeStorePairs: request.includeStorePairs,
       portionSize: request.portionSize,
+      organicOnly: request.organicOnly,
     }),
     signal: AbortSignal.timeout(15000),
   });

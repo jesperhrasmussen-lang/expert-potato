@@ -11,6 +11,7 @@ interface StoredPrefs {
   address: string;
   includeStorePairs: boolean;
   portionSize: PortionSize;
+  organicOnly?: boolean;
 }
 
 interface AddressSuggestion {
@@ -110,6 +111,7 @@ export function MealSearchForm() {
   const [address, setAddress] = useState('');
   const [includeStorePairs, setIncludeStorePairs] = useState(false);
   const [portionSize, setPortionSize] = useState<PortionSize>('small');
+  const [organicOnly, setOrganicOnly] = useState(false);
   const [saveOnDevice, setSaveOnDevice] = useState(false);
   const [locating, setLocating] = useState(false);
   const [locationError, setLocationError] = useState<string | null>(null);
@@ -124,6 +126,7 @@ export function MealSearchForm() {
       setAddress(prefs.address);
       setIncludeStorePairs(prefs.includeStorePairs);
       setPortionSize(prefs.portionSize);
+      setOrganicOnly(prefs.organicOnly ?? false);
       setSaveOnDevice(true);
     }
   }, []);
@@ -182,7 +185,7 @@ export function MealSearchForm() {
     clearSuggestions();
 
     if (saveOnDevice) {
-      savePrefs({ address, includeStorePairs, portionSize });
+      savePrefs({ address, includeStorePairs, portionSize, organicOnly });
     } else {
       clearPrefs();
     }
@@ -191,6 +194,7 @@ export function MealSearchForm() {
       address,
       includeStorePairs: includeStorePairs ? '1' : '0',
       portionSize,
+      organicOnly: organicOnly ? '1' : '0',
     });
 
     router.push(`/results?${params.toString()}`);
@@ -275,6 +279,29 @@ export function MealSearchForm() {
               onClick={() => setIncludeStorePairs(true)}
             >
               2
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Organic toggle */}
+      <div className="toggle-row">
+        <div className="toggle-group">
+          <span className="toggle-label">Økologisk</span>
+          <div className="toggle-control">
+            <button
+              type="button"
+              className={`toggle-btn ${!organicOnly ? 'toggle-active' : ''}`}
+              onClick={() => setOrganicOnly(false)}
+            >
+              Alle tilbud
+            </button>
+            <button
+              type="button"
+              className={`toggle-btn ${organicOnly ? 'toggle-active' : ''}`}
+              onClick={() => setOrganicOnly(true)}
+            >
+              Kun økologisk
             </button>
           </div>
         </div>

@@ -30,6 +30,7 @@ export interface MealSearchRequest {
   maxTransitMin: number | null;
   includeStorePairs: boolean;
   portionSize: PortionSize;
+  organicOnly: boolean;
 }
 
 export interface IngredientFamily {

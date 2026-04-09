@@ -23,6 +23,7 @@ export default async function ResultsPage({
     maxTransitMin: null,
     includeStorePairs: params.includeStorePairs !== '0',
     portionSize,
+    organicOnly: params.organicOnly === '1',
   };
 
   return (

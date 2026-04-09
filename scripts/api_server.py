@@ -58,6 +58,7 @@ class MealSearchRequest(BaseModel):
     maxTransitMin: Optional[float] = None
     includeStorePairs: bool = True
     portionSize: str = "medium"
+    organicOnly: bool = False
 
 
 @app.post("/api/meal-search")
@@ -97,10 +98,16 @@ async def meal_search(req: MealSearchRequest):
     conn = sqlite3.connect(str(DB_PATH))
     conn.row_factory = sqlite3.Row
 
-    all_active = conn.execute(
-        "SELECT * FROM offers WHERE expires_at >= ? AND offer_state = 'active'",
-        [today],
-    ).fetchall()
+    if req.organicOnly:
+        all_active = conn.execute(
+            "SELECT * FROM offers WHERE expires_at >= ? AND offer_state = 'active' AND is_organic = 1",
+            [today],
+        ).fetchall()
+    else:
+        all_active = conn.execute(
+            "SELECT * FROM offers WHERE expires_at >= ? AND offer_state = 'active'",
+            [today],
+        ).fetchall()
     conn.close()
 
     # Build family ID set from catalog
@@ -154,6 +161,7 @@ async def meal_search(req: MealSearchRequest):
             "comparisonGroup": o.get("query_family"),
             "sourceKind": o.get("source_kind"),
             "confidence": o.get("confidence"),
+            "isOrganic": bool(o.get("is_organic")),
         })
 
     mapped_places = []

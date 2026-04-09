@@ -9,6 +9,16 @@ from typing import Any, Dict, Iterable, List, Optional
 
 from ingredient_catalog_dk import infer_attributes, normalize_text, query_to_family
 
+_ORGANIC_KEYWORDS = ['økologisk', 'øko ', 'øko-', 'organic', 'ø-mærket', 'ø-label']
+_ORGANIC_BRANDS = ['øgo']
+
+def detect_organic(product_name: str, description: str = '') -> bool:
+    text = f"{product_name or ''} {description or ''}".lower()
+    if any(kw in text for kw in _ORGANIC_KEYWORDS):
+        return True
+    words = text.split()
+    return any(brand == w for brand in _ORGANIC_BRANDS for w in words)
+
 
 SCHEMA_SQL = '''
 PRAGMA foreign_keys = ON;
@@ -83,6 +93,7 @@ CREATE TABLE IF NOT EXISTS offers (
   source_offer_id TEXT,
   source_catalog_id TEXT,
   confidence TEXT,
+  is_organic INTEGER NOT NULL DEFAULT 0,
   raw_payload_json TEXT,
   first_seen_at TEXT NOT NULL,
   last_seen_at TEXT NOT NULL,
@@ -242,6 +253,10 @@ def upsert_offers(db_path: str, json_paths: List[str]) -> None:
                 'source_offer_id': offer.get('publicId') or offer.get('source_offer_id'),
                 'source_catalog_id': offer.get('publicationPublicId') or offer.get('source_catalog_id'),
                 'confidence': offer.get('confidence') or 'high',
+                'is_organic': 1 if detect_organic(
+                    offer.get('productName') or offer.get('product_name') or '',
+                    offer.get('description') or '',
+                ) else 0,
                 'raw_payload_json': raw_json,
                 'first_seen_at': now_iso,
                 'last_seen_at': now_iso,
@@ -255,14 +270,14 @@ def upsert_offers(db_path: str, json_paths: List[str]) -> None:
                   size_text, size_grams_min, size_grams_max, unit_price, unit_price_unit,
                   offer_start_at, offer_end_at, offer_state,
                   source_system, source_kind, source_url, source_offer_id, source_catalog_id,
-                  confidence, raw_payload_json, first_seen_at, last_seen_at, expires_at
+                  confidence, is_organic, raw_payload_json, first_seen_at, last_seen_at, expires_at
                 ) VALUES (
                   :offer_key, :chain_key, :query_family, :product_name, :description,
                   :price_regular, :price_effective, :price_effective_kind, :currency,
                   :size_text, :size_grams_min, :size_grams_max, :unit_price, :unit_price_unit,
                   :offer_start_at, :offer_end_at, :offer_state,
                   :source_system, :source_kind, :source_url, :source_offer_id, :source_catalog_id,
-                  :confidence, :raw_payload_json, :first_seen_at, :last_seen_at, :expires_at
+                  :confidence, :is_organic, :raw_payload_json, :first_seen_at, :last_seen_at, :expires_at
                 )
                 ON CONFLICT(offer_key) DO UPDATE SET
                   chain_key=excluded.chain_key,
@@ -287,6 +302,7 @@ def upsert_offers(db_path: str, json_paths: List[str]) -> None:
                   source_offer_id=excluded.source_offer_id,
                   source_catalog_id=excluded.source_catalog_id,
                   confidence=excluded.confidence,
+                  is_organic=excluded.is_organic,
                   raw_payload_json=excluded.raw_payload_json,
                   last_seen_at=excluded.last_seen_at,
                   expires_at=excluded.expires_at
