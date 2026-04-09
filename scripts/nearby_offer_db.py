@@ -9,15 +9,18 @@ from typing import Any, Dict, Iterable, List, Optional
 
 from ingredient_catalog_dk import infer_attributes, normalize_text, query_to_family
 
-_ORGANIC_KEYWORDS = ['økologisk', 'øko ', 'øko-', 'organic', 'ø-mærket', 'ø-label']
-_ORGANIC_BRANDS = ['øgo']
-
 def detect_organic(product_name: str, description: str = '') -> bool:
-    text = f"{product_name or ''} {description or ''}".lower()
-    if any(kw in text for kw in _ORGANIC_KEYWORDS):
+    text = f"{product_name or ''} {description or ''}"
+    low = text.lower()
+    # Danish ø/Ø doesn't lowercase properly in all environments, check both cases
+    if 'kologisk' in low or 'kologisk' in text:
         return True
-    words = text.split()
-    return any(brand == w for brand in _ORGANIC_BRANDS for w in words)
+    if 'øko ' in low or 'øko-' in low or 'Øko ' in text or 'Øko-' in text:
+        return True
+    words = low.split()
+    if 'øgo' in words or 'ØGO' in text.split():
+        return True
+    return False
 
 
 SCHEMA_SQL = '''

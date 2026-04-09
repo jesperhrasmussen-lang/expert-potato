@@ -237,25 +237,66 @@ def normalize_ipaper_offer(chain: str, query: str, product_name: str, price: Opt
     }
 
 
+def _extract_ipaper_offers(blob: str, query_family: str) -> List[Dict[str, Any]]:
+    """Scan iPaper text blob for product chunks matching a family.
+
+    Strategy: find size patterns (e.g. '700 g.') and look at surrounding text
+    to extract product name and price.
+    """
+    results = []
+    # Find all chunks: text before a size pattern, size, then price info after
+    # Pattern: ... <size> g. ... <price>,-
+    for m in re.finditer(r'(\d+(?:\s*-\s*\d+)?)\s*(g|kg)\.\s*(.*?)\s+(\d+),-', blob):
+        size_text = f"{m.group(1)} {m.group(2)}"
+        price = int(m.group(4))
+        middle = m.group(3)
+
+        # Get context: 120 chars before the size match
+        start = max(0, m.start() - 120)
+        context_before = blob[start:m.start()].strip()
+
+        # Take last sentence-like fragment (after last price or period-separated boundary)
+        # Split on common boundaries: price patterns, periods followed by caps
+        parts = re.split(r'\d+,-\s*|(?<=[.!])\s+(?=[A-ZÆØÅ])', context_before)
+        product_text = clean_text(parts[-1]) if parts else ''
+
+        # Include the size in matching text
+        full_text = f"{product_text} {size_text}"
+
+        if not text_matches_family(full_text, query_family):
+            continue
+
+        # Extract unit price from middle section
+        unit_price = None
+        up_match = re.search(r'Pr\.\s*kg\s*(?:max\.?\s*)?(\d+(?:[.,]\d+)?)', middle, re.I)
+        if up_match:
+            unit_price = float(up_match.group(1).replace(',', '.'))
+
+        results.append({
+            'productName': product_text,
+            'price': price,
+            'sizeText': size_text,
+            'unitPrice': unit_price,
+            'rawText': blob[start:m.end()],
+        })
+    return results
+
+
 def collect_foetex(query: str) -> List[Dict[str, Any]]:
     html = fetch_text(IPAPER_URLS['foetex'])
     texts = extract_page_texts(html)
     blob = ' '.join(texts)
     results = []
     query_family = query_to_family(query)
-    if query_family == 'minced-beef':
-        m = re.search(r'Hakket oksekød\s+700 g\.\s+14-18% fedt\.\s+Pr\. kg\s+107,14\s+75,-', blob, re.I)
-        if m:
-            results.append(normalize_ipaper_offer('foetex', query, 'Hakket oksekød', 75, '700 g', 107.14, '2026-04-07', '2026-04-16', m.group(0)))
-    if query_family in {'minced-pork', 'minced-veal-pork'}:
-        m = re.search(r'Hakket grise- eller grise-/kalvekød\s+800-900 g\.\s+4-7% fedt\.\s+Pr\. kg max\.\s+61,25\s+49,-', blob, re.I)
-        if m:
-            product_name = 'Hakket grisekød eller grise-/kalvekød' if query_family == 'minced-pork' else 'Hakket grise-/kalvekød'
-            results.append(normalize_ipaper_offer('foetex', query, product_name, 49, '800-900 g', 61.25, '2026-04-07', '2026-04-16', m.group(0)))
-    if query_family in {'chicken-breast', 'chicken-fillet'}:
-        m = re.search(r'Rose hel kylling eller kyllingebrystfilet\s+800-1600 g\..*?Pr\. kg max\.\s+73,75\s+59,-', blob, re.I)
-        if m:
-            results.append(normalize_ipaper_offer('foetex', query, 'Rose hel kylling eller kyllingebrystfilet', 59, '800-1600 g', 73.75, '2026-04-07', '2026-04-16', m.group(0)))
+    if not query_family:
+        return results
+
+    for product in _extract_ipaper_offers(blob, query_family):
+        results.append(normalize_ipaper_offer(
+            'foetex', query, product['productName'], product['price'],
+            product['sizeText'], product['unitPrice'],
+            None, None, product['rawText'],
+        ))
     return results
 
 
@@ -264,14 +305,16 @@ def collect_meny(query: str) -> List[Dict[str, Any]]:
     texts = extract_page_texts(html)
     blob = ' '.join(texts)
     results = []
-    if query_to_family(query) == 'minced-beef':
-        m = re.search(r'HAKKET OKSEKØD\s+14-18 %.*?Kg pris\s+99,88\..*?400 G\s+39 95', blob, re.I)
-        if m:
-            results.append(normalize_ipaper_offer('meny', query, 'HAKKET OKSEKØD 14-18 %', 39.95, '400 g', 99.88, '2026-04-07', '2026-04-09', m.group(0)))
-    if query_to_family(query) in {'chicken-breast', 'chicken-fillet'}:
-        m = re.search(r'GESTUS DANSK KYLLINGE-\s*BRYSTFILET ELLER KYLLINGEINDERFILET.*?2 KG\s+164 95\s+MEDLEMSPRIS\*\s+2 KG\s+145\.-\s+Kg pris\s+72,50', blob, re.I)
-        if m:
-            results.append(normalize_ipaper_offer('meny', query, 'GESTUS DANSK KYLLINGEBRYSTFILET ELLER KYLLINGEINDERFILET', 164.95, '2 kg', 72.50, '2026-04-07', '2026-04-09', m.group(0), effective_price=145, effective_kind='app'))
+    query_family = query_to_family(query)
+    if not query_family:
+        return results
+
+    for product in _extract_ipaper_offers(blob, query_family):
+        results.append(normalize_ipaper_offer(
+            'meny', query, product['productName'], product['price'],
+            product['sizeText'], product['unitPrice'],
+            None, None, product['rawText'],
+        ))
     return results
 
 

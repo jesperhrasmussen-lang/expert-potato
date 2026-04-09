@@ -87,16 +87,22 @@ def _contains_any(text: str, tokens: Iterable[str]) -> bool:
     return any(token in text for token in tokens)
 
 
+def _has_minced(text: str) -> bool:
+    """Check if text indicates minced/hakket meat — includes 'hk ' abbreviation used by Rema 1000."""
+    return 'hakket' in text or text.startswith('hk ') or ' hk ' in text
+
+
 def text_matches_family(text: Any, family: str) -> bool:
     low = normalize_text(text)
     if not low:
         return False
     if family == 'minced-beef':
-        return 'hakket' in low and 'okse' in low and 'kalv' not in low and 'svin' not in low and 'gris' not in low and 'flaesk' not in low
+        has_beef = 'okse' in low and 'kalv' not in low and 'svin' not in low and 'gris' not in low and 'flaesk' not in low
+        return has_beef and (_has_minced(low) or 'kologisk' in low)
     if family == 'minced-pork':
-        return 'hakket' in low and ('svin' in low or 'svine' in low or 'grise' in low or 'gris' in low)
+        return _has_minced(low) and ('svin' in low or 'svine' in low or 'grise' in low or 'gris' in low)
     if family == 'minced-veal-pork':
-        return ('hakket' in low and (('kalv' in low and ('flaesk' in low or 'svin' in low)) or 'grisekalve' in low or 'grise kalve' in low))
+        return (_has_minced(low) and (('kalv' in low and ('flaesk' in low or 'svin' in low)) or 'grisekalve' in low or 'grise kalve' in low))
     if family == 'broccoli':
         return 'broccoli' in low
     if family == 'cauliflower':
