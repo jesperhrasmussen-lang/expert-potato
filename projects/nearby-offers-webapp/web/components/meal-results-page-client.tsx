@@ -17,19 +17,12 @@ function SearchSummaryBanner({ request }: { request: MealSearchRequest }) {
   return (
     <header className="summary-bar summary-bar-compact">
       <div>
-        <p className="summary-eyebrow">Din søgning</p>
-        <h1 className="summary-address">{request.address}</h1>
-        <p className="summary-subline">Billigste måltider på tværs af kæder</p>
-        <div className="summary-chip-row">
-          <span className="badge badge-neutral">
-            {request.includeStorePairs ? '1-2 kæder' : 'Kun 1 kæde'}
-          </span>
-          <span className="badge badge-neutral">
-            {PORTION_LABELS[request.portionSize] || 'Medium'} portion
-          </span>
-        </div>
+        <p className="summary-address-sm">{request.address}</p>
+        <p className="summary-subline-sm">
+          {PORTION_LABELS[request.portionSize] || 'Medium'} portion · {request.includeStorePairs ? '1–2 butikker' : '1 butik'}
+        </p>
       </div>
-      <Link className="secondary-button link-button" href="/">
+      <Link className="secondary-button link-button section-back-link" href="/">
         Ny søgning
       </Link>
     </header>

@@ -68,16 +68,25 @@ function DealCard({ deal, rank }: { deal: ExtendedDeal; rank: number }) {
         <span className="meal-card-rank">{rank}</span>
         <div className="meal-card-lines">
           <p className="meal-card-line2">
-            {deal.meatFamilyName} · {deal.priceDkk}kr / {deal.packageGrams}g
+            {deal.meatFamilyName} · {deal.priceDkk}kr
           </p>
           <p className="meal-card-line1">
-            {deal.storeName} · {formatDistance(deal.distanceMeters)} · {deal.servings} måltider · ~{deal.pricePerMeal}kr/måltid
+            {deal.storeName} · {formatDistance(deal.distanceMeters)} · {deal.servings} mltd · ~{deal.pricePerMeal}kr/mltd
           </p>
         </div>
       </div>
 
       {expanded && recipe && (
-        <RecipeDetail recipe={recipe} />
+        <>
+          <RecipeDetail recipe={recipe} />
+          <button
+            type="button"
+            className="secondary-button recipe-back-btn"
+            onClick={(e) => { e.stopPropagation(); setExpanded(false); }}
+          >
+            Luk opskrift
+          </button>
+        </>
       )}
     </article>
   );
@@ -90,7 +99,7 @@ function RecipeDetail({ recipe }: { recipe: Recipe }) {
     <div className="meal-card-detail">
       <div className="recipe-header">
         <h3 className="recipe-title">{recipe.title}</h3>
-        <p className="recipe-subtitle">{recipe.subtitle} · {recipe.time} · {recipe.servings} portioner</p>
+        <p className="recipe-subtitle">{recipe.subtitle} · {recipe.time}</p>
       </div>
 
       <div className="nutrition-bar">
@@ -112,11 +121,25 @@ function RecipeDetail({ recipe }: { recipe: Recipe }) {
         </ul>
       </div>
 
+      {recipe.preparation && recipe.preparation.length > 0 && (
+        <div className="recipe-section">
+          <span className="meal-card-pantry-label">Forberedelse</span>
+          <ol className="recipe-list recipe-steps">
+            {recipe.preparation.map((step, i) => (
+              <li key={i}>{step}</li>
+            ))}
+          </ol>
+        </div>
+      )}
+
       <div className="recipe-section">
         <span className="meal-card-pantry-label">Fremgangsmåde</span>
         <ol className="recipe-list recipe-steps">
           {recipe.steps.map((step, i) => (
-            <li key={i}>{step}</li>
+            <li key={i}>
+              {step.heading && <strong>{step.heading}: </strong>}
+              {step.text}
+            </li>
           ))}
         </ol>
       </div>
