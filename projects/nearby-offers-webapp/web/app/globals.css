@@ -326,9 +326,9 @@ button, input {
 
 .toggle-btn-wide {
   width: 100%;
-  padding: 8px 6px;
+  padding: 11px 6px;
   border: none;
-  border-radius: 8px;
+  border-radius: 10px;
   background: #f0f0f0;
   font-size: 0.72rem;
   font-weight: 600;
