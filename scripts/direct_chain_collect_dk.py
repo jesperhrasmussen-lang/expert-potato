@@ -162,36 +162,11 @@ def collect_tjek(chain: str, query: str) -> List[Dict[str, Any]]:
     # 1. Catalog-based offers (dealer flyer)
     offers = fetch_json(f'https://squid-api.tjek.com/v2/offers?dealer_id={dealer_id}')
     out = []
-    seen_ids = set()
     query_family = query_to_family(query)
     for offer in offers:
         text = f"{offer.get('heading','')} {offer.get('description','')}"
         if query_family and text_matches_family(text, query_family):
             out.append(normalize_tjek_offer(offer, query))
-            seen_ids.add(offer.get('id'))
-
-    # 2. Search-based offers (catches non-catalog offers like app-only deals)
-    # Search with the original query + "økologisk" to find organic variants
-    search_terms = [query]
-    if 'kologisk' not in query.lower():
-        search_terms.append(f'økologisk {query}')
-    for term in search_terms:
-        encoded = urllib.parse.quote(term)
-        try:
-            search_offers = fetch_json(
-                f'https://squid-api.tjek.com/v2/offers/search?query={encoded}'
-                f'&r_lat=55.67&r_lng=12.57&r_radius=100000&limit=24&dealer_ids={dealer_id}'
-            )
-            for offer in search_offers:
-                oid = offer.get('id')
-                if oid in seen_ids:
-                    continue
-                text = f"{offer.get('heading','')} {offer.get('description','')}"
-                if query_family and text_matches_family(text, query_family):
-                    out.append(normalize_tjek_offer(offer, query))
-                    seen_ids.add(oid)
-        except Exception:
-            pass  # search is supplementary
 
     return out
 
