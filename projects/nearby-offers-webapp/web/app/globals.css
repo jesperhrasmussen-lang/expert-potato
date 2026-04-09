@@ -851,8 +851,23 @@ button, input {
   color: var(--text);
 }
 
-.toggle-control-three {
-  display: flex;
+.toggle-btn-wide {
+  width: 100%;
+  padding: 8px 6px;
+  border: none;
+  border-radius: 8px;
+  background: #f0f0f0;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.toggle-btn-wide:hover {
+  color: var(--text);
 }
 
 .toggle-active {
