@@ -200,7 +200,7 @@ export function MealSearchForm() {
     <form className="search-card" onSubmit={onSubmit}>
       {/* Address input with autocomplete */}
       <div className="field-group" ref={wrapperRef}>
-        <label className="field-label" htmlFor="address">Adresse</label>
+        <label className="field-label" htmlFor="address">📍 Adresse</label>
         <div className="autocomplete-wrapper">
           <input
             id="address"
@@ -208,7 +208,7 @@ export function MealSearchForm() {
             value={address}
             onChange={(e) => onAddressChange(e.target.value)}
             onFocus={() => { if (suggestions.length > 0) setShowSuggestions(true); }}
-            placeholder="Indtast din adresse..."
+            placeholder="Indtast adresse eller postnummer"
             autoComplete="off"
           />
           {showSuggestions && (
@@ -235,6 +235,7 @@ export function MealSearchForm() {
         >
           {locating ? 'Finder placering...' : 'Brug nuværende placering'}
         </button>
+        <span className="input-help">Vej, by eller postnummer</span>
         {locationError && <p className="input-error">{locationError}</p>}
       </div>
 
@@ -294,7 +295,7 @@ export function MealSearchForm() {
 
       {/* Submit */}
       <button className="primary-button" type="submit" disabled={!canSubmit}>
-        Find billigste måltider
+        Start søgning &rsaquo;
       </button>
     </form>
   );

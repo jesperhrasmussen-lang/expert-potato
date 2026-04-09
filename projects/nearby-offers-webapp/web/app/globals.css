@@ -1,14 +1,15 @@
 :root {
-  --bg: #f8fafc;
-  --surface: rgba(255, 255, 255, 0.92);
-  --text: #0f172a;
-  --muted: #475569;
-  --border: #e2e8f0;
-  --accent: #2563eb;
-  --accent-soft: #dbeafe;
+  --bg: #faf8f6;
+  --surface: rgba(255, 255, 255, 0.95);
+  --text: #1a1a1a;
+  --muted: #6b7280;
+  --border: #e5e7eb;
+  --accent: #e97316;
+  --accent-hover: #dc6a10;
+  --accent-soft: #fff3e6;
   --success-soft: #dcfce7;
-  --shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
-  --shadow-strong: 0 18px 42px rgba(15, 23, 42, 0.09);
+  --shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+  --shadow-strong: 0 16px 40px rgba(0, 0, 0, 0.1);
   --radius: 20px;
 }
 
@@ -20,8 +21,8 @@ html, body {
   margin: 0;
   padding: 0;
   background:
-    radial-gradient(circle at top left, rgba(37, 99, 235, 0.08), transparent 24%),
-    radial-gradient(circle at top right, rgba(14, 165, 233, 0.07), transparent 20%),
+    radial-gradient(circle at top left, rgba(233, 115, 22, 0.06), transparent 24%),
+    radial-gradient(circle at top right, rgba(251, 191, 36, 0.05), transparent 20%),
     var(--bg);
   color: var(--text);
   font-family: Inter, Arial, Helvetica, sans-serif;
@@ -47,10 +48,47 @@ button, input {
 }
 
 .site-header {
-  font-size: 1.1rem;
-  font-weight: 700;
-  margin-bottom: 16px;
+  margin-bottom: 8px;
   color: var(--text);
+}
+
+.header-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.header-title {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+
+.title-line1 {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.title-line2 {
+  font-size: 1.8rem;
+  font-weight: 800;
+  font-style: italic;
+  color: var(--accent);
+}
+
+.header-logo {
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.page-subtitle {
+  margin: 0;
+  font-size: 0.92rem;
+  color: var(--muted);
+  line-height: 1.5;
 }
 
 .page-stack,
@@ -171,7 +209,7 @@ button, input {
 .text-input:focus {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+  box-shadow: 0 0 0 4px rgba(233, 115, 22, 0.15);
 }
 
 .segmented-control {
@@ -284,13 +322,13 @@ button, input {
   top: 0;
   bottom: 0;
   width: 4px;
-  background: linear-gradient(180deg, var(--accent), rgba(37, 99, 235, 0.12));
+  background: linear-gradient(180deg, var(--accent), rgba(233, 115, 22, 0.15));
 }
 
 .offer-card:hover {
   transform: translateY(-2px);
   box-shadow: var(--shadow-strong);
-  border-color: rgba(37, 99, 235, 0.22);
+  border-color: rgba(233, 115, 22, 0.25);
 }
 
 .compact-offer-card {
@@ -542,6 +580,12 @@ button, input {
   text-align: center;
 }
 
+.input-help {
+  margin: 4px 0 0;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
 .input-error {
   margin: 6px 0 0;
   font-size: 0.88rem;
@@ -567,13 +611,13 @@ button, input {
   top: 0;
   bottom: 0;
   width: 4px;
-  background: linear-gradient(180deg, var(--accent), rgba(37, 99, 235, 0.12));
+  background: linear-gradient(180deg, var(--accent), rgba(233, 115, 22, 0.15));
 }
 
 .meal-card-compact:hover {
   transform: translateY(-1px);
   box-shadow: var(--shadow-strong);
-  border-color: rgba(37, 99, 235, 0.22);
+  border-color: rgba(233, 115, 22, 0.25);
 }
 
 .meal-card-summary {
