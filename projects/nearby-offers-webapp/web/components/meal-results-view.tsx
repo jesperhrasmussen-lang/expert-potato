@@ -3,9 +3,11 @@
 import Link from 'next/link';
 import { useState } from 'react';
 
-import type { MeatDeal, MealCandidate, MealSearchResponse } from '@/types/meal-optimizer-types';
+import type { MeatDeal, MealCandidate, MealSearchResponse, PortionSize } from '@/types/meal-optimizer-types';
 import { getRecipeForMeat } from '@/lib/recipes';
 import type { Recipe } from '@/lib/recipes';
+
+type SizeKey = 'small' | 'large';
 
 function formatDistance(meters: number) {
   return `${meters} meter`;
@@ -51,7 +53,7 @@ function extractBestDeals(candidates: MealCandidate[]): ExtendedDeal[] {
   return [...bestByMeat.values()].sort((a, b) => a.priceDkk - b.priceDkk);
 }
 
-function DealCard({ deal, rank, organicOnly }: { deal: ExtendedDeal; rank: number; organicOnly?: boolean }) {
+function DealCard({ deal, rank, organicOnly, sizeKey }: { deal: ExtendedDeal; rank: number; organicOnly?: boolean; sizeKey: SizeKey }) {
   const [expanded, setExpanded] = useState(false);
   const recipe = getRecipeForMeat(deal.meatFamilyId);
 
@@ -77,7 +79,6 @@ function DealCard({ deal, rank, organicOnly }: { deal: ExtendedDeal; rank: numbe
 
       {expanded && recipe && (
         <>
-          <RecipeDetail recipe={recipe} />
           <button
             type="button"
             className="secondary-button recipe-back-btn"
@@ -85,14 +86,16 @@ function DealCard({ deal, rank, organicOnly }: { deal: ExtendedDeal; rank: numbe
           >
             Luk opskrift
           </button>
+          <RecipeDetail recipe={recipe} sizeKey={sizeKey} />
         </>
       )}
     </article>
   );
 }
 
-function RecipeDetail({ recipe }: { recipe: Recipe }) {
-  const n = recipe.nutrition;
+function RecipeDetail({ recipe, sizeKey }: { recipe: Recipe; sizeKey: SizeKey }) {
+  const variant = recipe.portions[sizeKey];
+  const n = variant.nutrition;
 
   return (
     <div className="meal-card-detail">
@@ -112,7 +115,7 @@ function RecipeDetail({ recipe }: { recipe: Recipe }) {
       <div className="recipe-section">
         <span className="meal-card-pantry-label">Ingredienser</span>
         <ul className="recipe-list">
-          {recipe.ingredients.map((item, i) => (
+          {variant.ingredients.map((item, i) => (
             <li key={i}>
               <strong>{item.quantity}</strong> {item.name}{item.note ? ` (${item.note})` : ''}
             </li>
@@ -155,8 +158,9 @@ function EmptyState() {
   );
 }
 
-export function MealResultsView({ data, organicOnly }: { data: MealSearchResponse; organicOnly?: boolean }) {
+export function MealResultsView({ data, organicOnly, portionSize }: { data: MealSearchResponse; organicOnly?: boolean; portionSize?: PortionSize }) {
   const deals = extractBestDeals(data.candidates);
+  const sizeKey: SizeKey = portionSize === 'large' ? 'large' : 'small';
 
   return (
     <div className="results-layout">
@@ -167,7 +171,7 @@ export function MealResultsView({ data, organicOnly }: { data: MealSearchRespons
           </div>
           <div className="stack-list">
             {deals.map((deal, i) => (
-              <DealCard key={deal.meatFamilyId} deal={deal} rank={i + 1} organicOnly={organicOnly} />
+              <DealCard key={deal.meatFamilyId} deal={deal} rank={i + 1} organicOnly={organicOnly} sizeKey={sizeKey} />
             ))}
           </div>
         </section>
