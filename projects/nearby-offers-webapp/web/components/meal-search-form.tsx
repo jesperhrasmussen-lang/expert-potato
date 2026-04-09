@@ -235,49 +235,48 @@ export function MealSearchForm() {
         >
           {locating ? 'Finder placering...' : 'Brug nuværende placering'}
         </button>
-        <span className="input-help">Vej, by eller postnummer</span>
         {locationError && <p className="input-error">{locationError}</p>}
       </div>
 
-      {/* Meal size toggle */}
-      <div className="field-group">
-        <span className="field-label">Måltidsstørrelse</span>
-        <div className="segmented-control segmented-control-two">
-          <button
-            type="button"
-            className={`segment ${portionSize === 'small' ? 'segment-active' : ''}`}
-            onClick={() => setPortionSize('small')}
-          >
-            Lille
-          </button>
-          <button
-            type="button"
-            className={`segment ${portionSize === 'large' ? 'segment-active' : ''}`}
-            onClick={() => setPortionSize('large')}
-          >
-            Stor
-          </button>
+      {/* Meal size + shop count side by side */}
+      <div className="toggle-row">
+        <div className="toggle-group">
+          <span className="toggle-label">Størrelse</span>
+          <div className="toggle-control">
+            <button
+              type="button"
+              className={`toggle-btn ${portionSize === 'small' ? 'toggle-active' : ''}`}
+              onClick={() => setPortionSize('small')}
+            >
+              Lille
+            </button>
+            <button
+              type="button"
+              className={`toggle-btn ${portionSize === 'large' ? 'toggle-active' : ''}`}
+              onClick={() => setPortionSize('large')}
+            >
+              Stor
+            </button>
+          </div>
         </div>
-      </div>
-
-      {/* Shop count toggle */}
-      <div className="field-group">
-        <span className="field-label">Antal butikker</span>
-        <div className="segmented-control segmented-control-two">
-          <button
-            type="button"
-            className={`segment ${!includeStorePairs ? 'segment-active' : ''}`}
-            onClick={() => setIncludeStorePairs(false)}
-          >
-            1 butik
-          </button>
-          <button
-            type="button"
-            className={`segment ${includeStorePairs ? 'segment-active' : ''}`}
-            onClick={() => setIncludeStorePairs(true)}
-          >
-            2 butikker (300m)
-          </button>
+        <div className="toggle-group">
+          <span className="toggle-label">Butikker</span>
+          <div className="toggle-control">
+            <button
+              type="button"
+              className={`toggle-btn ${!includeStorePairs ? 'toggle-active' : ''}`}
+              onClick={() => setIncludeStorePairs(false)}
+            >
+              1
+            </button>
+            <button
+              type="button"
+              className={`toggle-btn ${includeStorePairs ? 'toggle-active' : ''}`}
+              onClick={() => setIncludeStorePairs(true)}
+            >
+              2
+            </button>
+          </div>
         </div>
       </div>
 

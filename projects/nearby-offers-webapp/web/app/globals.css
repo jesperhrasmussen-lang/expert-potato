@@ -783,6 +783,56 @@ button, input {
   padding-left: 4px;
 }
 
+.toggle-row {
+  display: flex;
+  gap: 16px;
+}
+
+.toggle-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.toggle-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+}
+
+.toggle-control {
+  display: flex;
+  gap: 4px;
+  background: #f0f0f0;
+  border-radius: 10px;
+  padding: 3px;
+}
+
+.toggle-btn {
+  flex: 1;
+  padding: 7px 12px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.toggle-btn:hover {
+  color: var(--text);
+}
+
+.toggle-active {
+  background: #d4edda;
+  color: #2d6a4f;
+}
+
 .meal-card-line1 {
   font-size: 0.78rem;
 }
