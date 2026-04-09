@@ -241,21 +241,23 @@ export function MealSearchForm() {
       {/* Meal size + shop count side by side */}
       <div className="toggle-row">
         <div className="toggle-group">
-          <span className="toggle-label">Størrelse</span>
+          <span className="toggle-label">Måltidsstørrelse</span>
           <div className="toggle-control">
             <button
               type="button"
               className={`toggle-btn ${portionSize === 'small' ? 'toggle-active' : ''}`}
               onClick={() => setPortionSize('small')}
             >
-              Lille
+              <span className="toggle-main">Lille</span>
+              <span className="toggle-sub">soft girl · 2500 kJ</span>
             </button>
             <button
               type="button"
               className={`toggle-btn ${portionSize === 'large' ? 'toggle-active' : ''}`}
               onClick={() => setPortionSize('large')}
             >
-              Stor
+              <span className="toggle-main">Stor</span>
+              <span className="toggle-sub">gymbro · 3000 kJ</span>
             </button>
           </div>
         </div>

@@ -817,7 +817,7 @@ button, input {
 
 .toggle-btn {
   flex: 1;
-  padding: 7px 12px;
+  padding: 8px 10px;
   border: none;
   border-radius: 8px;
   background: transparent;
@@ -826,6 +826,21 @@ button, input {
   color: var(--muted);
   cursor: pointer;
   transition: background 0.15s ease, color 0.15s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.toggle-main {
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.toggle-sub {
+  font-size: 0.68rem;
+  font-weight: 400;
+  opacity: 0.75;
 }
 
 .toggle-btn:hover {
