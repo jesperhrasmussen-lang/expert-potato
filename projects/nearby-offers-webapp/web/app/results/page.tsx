@@ -1,7 +1,7 @@
 import { MealResultsPageClient } from '@/components/meal-results-page-client';
 import type { MealSearchRequest, PortionSize } from '@/types/meal-optimizer-types';
 
-const VALID_PORTION_SIZES = ['small', 'medium', 'large'];
+const VALID_PORTION_SIZES = ['small', 'medium', 'large', 'combined'];
 
 export default async function ResultsPage({
   searchParams,

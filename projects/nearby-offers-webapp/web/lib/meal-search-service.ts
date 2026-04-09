@@ -19,9 +19,10 @@ const DEFAULT_CHAIN_DISTANCE_RADIUS_KM = 20;
 const RESULT_LIMIT = 10;
 
 const PORTION_MULTIPLIERS: Record<PortionSize, { meat: number; vegetable: number }> = {
-  small:  { meat: 125 / 150, vegetable: 250 / 300 },
-  medium: { meat: 1,         vegetable: 1 },
-  large:  { meat: 210 / 150, vegetable: 400 / 300 },
+  small:    { meat: 125 / 150, vegetable: 250 / 300 },
+  medium:   { meat: 1,         vegetable: 1 },
+  large:    { meat: 210 / 150, vegetable: 400 / 300 },
+  combined: { meat: 1,         vegetable: 1 },
 };
 const PIECE_GRAMS_ASSUMPTIONS: Record<string, number> = {};
 

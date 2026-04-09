@@ -7,7 +7,7 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 export const maxDuration = 30;
 
-const VALID_PORTION_SIZES: PortionSize[] = ['small', 'medium', 'large'];
+const VALID_PORTION_SIZES: PortionSize[] = ['small', 'medium', 'large', 'combined'];
 
 function validateMealSearchRequest(request: MealSearchRequest) {
   if (!request.address.trim()) {
@@ -26,8 +26,13 @@ export async function POST(request: Request) {
     }
     validateMealSearchRequest(body);
 
+    // Map combined to medium for the backend — frontend handles the display split
+    const searchBody = body.portionSize === 'combined'
+      ? { ...body, portionSize: 'medium' as PortionSize }
+      : body;
+
     try {
-      const response = await executeMealSearch(body);
+      const response = await executeMealSearch(searchBody);
       return NextResponse.json(response, { status: 200 });
     } catch (err) {
       const msg = err instanceof Error ? err.message : '';

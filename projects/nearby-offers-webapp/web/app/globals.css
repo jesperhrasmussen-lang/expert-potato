@@ -762,6 +762,12 @@ button, input {
   font-weight: 700;
 }
 
+.nutrition-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
 .recipe-header {
   margin-bottom: 4px;
 }
@@ -843,6 +849,10 @@ button, input {
 
 .toggle-btn:hover {
   color: var(--text);
+}
+
+.toggle-control-three {
+  display: flex;
 }
 
 .toggle-active {

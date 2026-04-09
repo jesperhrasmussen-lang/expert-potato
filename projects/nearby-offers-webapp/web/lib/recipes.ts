@@ -22,6 +22,8 @@ export interface PortionVariant {
   ingredients: IngredientLine[];
 }
 
+export type SizeKey = 'small' | 'large' | 'combined';
+
 export interface Recipe {
   meatFamily: string;
   title: string;
@@ -31,6 +33,7 @@ export interface Recipe {
   portions: {
     small: PortionVariant;
     large: PortionVariant;
+    combined: PortionVariant;
   };
   preparation?: string[];
   steps: RecipeStep[];
@@ -39,6 +42,7 @@ export interface Recipe {
 // Nutrition calculated per portion (recipe ÷ 2) using standard Danish food tables.
 // Meat fat%: svinekød 10%, oksekød 12%, kalv/flæsk 12%. Fløde 13%.
 // Small portions target ~2000 kJ per portion. Large portions target ~3500 kJ.
+// Combined = 1 softgirl + 1 gymbro portion. Ingredients are midpoint.
 
 export const RECIPES: Recipe[] = [
   // ─── CHICKEN-FILLET: Original ───
@@ -75,6 +79,19 @@ export const RECIPES: Recipe[] = [
           { name: 'Salt og peber', quantity: 'efter smag' },
         ],
       },
+      combined: {
+        nutrition: { kj: '2000 / 3480', fat: '13 / 22', carbs: '48 / 90', protein: '35 / 64', fiber: '7 / 11' },
+        ingredients: [
+          { name: 'Kyllingebryst eller inderfilet', quantity: '275g', note: 'tilbud' },
+          { name: 'Pasta', quantity: '160g', note: 'penne eller fusilli' },
+          { name: 'Broccoli', quantity: '425g', note: 'i små buketter' },
+          { name: 'Fløde', quantity: '1 dl' },
+          { name: 'Hvidløg', quantity: '2–3 fed', note: 'fintrevet eller finthakket' },
+          { name: 'Citronsaft', quantity: '1–2 tsk' },
+          { name: 'Extra virgin olivenolie', quantity: '1 spsk' },
+          { name: 'Salt og peber', quantity: 'efter smag' },
+        ],
+      },
     },
     steps: [
       { text: 'Sæt en gryde vand over, og kog pastaen efter pakkens anvisning. Når der er 2 minutter tilbage af kogetiden, tilsætter du broccoli i samme gryde som pastaen.' },
@@ -85,7 +102,7 @@ export const RECIPES: Recipe[] = [
       { text: 'Tilsæt fløden og 2–4 spsk pastavand. Lad det småsimre 1–2 minutter, til saucen bliver let cremet. Hvis den virker for tyk, tilsæt lidt mere pastavand.' },
       { text: 'Lad kylling og sauce blive på panden. Tilsæt den kogte pasta og broccoli til panden, og vend det hele sammen i 30–60 sekunder.' },
       { text: 'Tag panden ned på lav varme eller sluk. Tilsæt citronsaften, og smag til med mere salt og peber.' },
-      { text: 'Server med det samme.' },
+      { text: 'Server med det samme. Den ene portion er lidt mindre end den anden.' },
     ],
   },
 
@@ -120,6 +137,19 @@ export const RECIPES: Recipe[] = [
           { name: 'Frisk spinat', quantity: '150g' },
           { name: 'Hvidløg', quantity: '3 fed', note: 'finthakket' },
           { name: 'Extra virgin olivenolie', quantity: '1,5 spsk' },
+          { name: 'Salt og peber', quantity: 'efter smag' },
+        ],
+      },
+      combined: {
+        nutrition: { kj: '2000 / 3450', fat: '15 / 24', carbs: '44 / 78', protein: '36 / 62', fiber: '5 / 8' },
+        ingredients: [
+          { name: 'Kyllingebryst eller inderfilet', quantity: '275g', note: 'tilbud' },
+          { name: 'Pasta', quantity: '145g', note: 'penne eller fusilli' },
+          { name: 'Cherrytomater', quantity: '350g', note: 'halveret' },
+          { name: 'Feta', quantity: '80g', note: 'smuldret' },
+          { name: 'Frisk spinat', quantity: '125g' },
+          { name: 'Hvidløg', quantity: '2–3 fed', note: 'finthakket' },
+          { name: 'Extra virgin olivenolie', quantity: '1 spsk' },
           { name: 'Salt og peber', quantity: 'efter smag' },
         ],
       },
@@ -167,6 +197,20 @@ export const RECIPES: Recipe[] = [
           { name: 'Sojasauce', quantity: '3 spsk' },
           { name: 'Honning', quantity: '1 spsk' },
           { name: 'Hvidløg', quantity: '3 fed', note: 'fintrevet eller finthakket' },
+          { name: 'Friskrevet ingefær', quantity: '1 spsk' },
+          { name: 'Riseddike eller saft af ½ lime', quantity: '1–2 tsk' },
+          { name: 'Extra virgin olivenolie', quantity: '1 spsk' },
+        ],
+      },
+      combined: {
+        nutrition: { kj: '2000 / 3540', fat: '17 / 30', carbs: '52 / 90', protein: '30 / 52', fiber: '3 / 6' },
+        ingredients: [
+          { name: 'Hakket svinekød', quantity: '350g', note: 'tilbud' },
+          { name: 'Jasminris', quantity: '130g' },
+          { name: 'Spidskål', quantity: '400g', note: 'fintsnittet' },
+          { name: 'Sojasauce', quantity: '2–3 spsk' },
+          { name: 'Honning', quantity: '1 spsk' },
+          { name: 'Hvidløg', quantity: '2–3 fed', note: 'fintrevet eller finthakket' },
           { name: 'Friskrevet ingefær', quantity: '1 spsk' },
           { name: 'Riseddike eller saft af ½ lime', quantity: '1–2 tsk' },
           { name: 'Extra virgin olivenolie', quantity: '1 spsk' },
@@ -226,6 +270,19 @@ export const RECIPES: Recipe[] = [
           { name: 'Salt og peber', quantity: 'efter smag' },
         ],
       },
+      combined: {
+        nutrition: { kj: '2000 / 3500', fat: '18 / 32', carbs: '46 / 82', protein: '30 / 52', fiber: '3 / 5' },
+        ingredients: [
+          { name: 'Hakket svinekød', quantity: '350g', note: 'tilbud' },
+          { name: 'Jasminris', quantity: '130g' },
+          { name: 'Frisk spinat', quantity: '250g' },
+          { name: 'Feta', quantity: '80g', note: 'smuldret' },
+          { name: 'Hvidløg', quantity: '2–3 fed', note: 'finthakket' },
+          { name: 'Citronsaft', quantity: '1–2 tsk' },
+          { name: 'Extra virgin olivenolie', quantity: '1 spsk' },
+          { name: 'Salt og peber', quantity: 'efter smag' },
+        ],
+      },
     },
     steps: [
       { text: 'Kog risene efter pakkens anvisning. Lad dem stå med låg, når de er færdige.' },
@@ -270,6 +327,21 @@ export const RECIPES: Recipe[] = [
           { name: 'Gulerødder', quantity: '250g', note: 'i små tern' },
           { name: 'Løg', quantity: '1 stk', note: 'finthakket' },
           { name: 'Hvidløg', quantity: '3 fed', note: 'fintrevet eller finthakket' },
+          { name: 'Oregano', quantity: '1 tsk' },
+          { name: 'Koncentreret tomatpuré', quantity: '1 spsk', note: 'valgfrit' },
+          { name: 'Extra virgin olivenolie', quantity: '1 spsk' },
+          { name: 'Salt og peber', quantity: 'efter smag' },
+        ],
+      },
+      combined: {
+        nutrition: { kj: '2000 / 3600', fat: '19 / 32', carbs: '50 / 86', protein: '28 / 54', fiber: '6 / 9' },
+        ingredients: [
+          { name: 'Hakket oksekød', quantity: '300g', note: 'tilbud' },
+          { name: 'Pasta', quantity: '125g', note: 'fusilli, penne eller spaghetti' },
+          { name: 'Flåede tomater', quantity: '1 dåse', note: '400g' },
+          { name: 'Gulerødder', quantity: '200g', note: 'i små tern' },
+          { name: 'Løg', quantity: '1 stk', note: 'finthakket' },
+          { name: 'Hvidløg', quantity: '2–3 fed', note: 'fintrevet eller finthakket' },
           { name: 'Oregano', quantity: '1 tsk' },
           { name: 'Koncentreret tomatpuré', quantity: '1 spsk', note: 'valgfrit' },
           { name: 'Extra virgin olivenolie', quantity: '1 spsk' },
@@ -328,6 +400,21 @@ export const RECIPES: Recipe[] = [
           { name: 'Salt og peber', quantity: 'efter smag' },
         ],
       },
+      combined: {
+        nutrition: { kj: '2000 / 3500', fat: '19 / 33', carbs: '44 / 78', protein: '30 / 52', fiber: '5 / 8' },
+        ingredients: [
+          { name: 'Hakket oksekød', quantity: '300g', note: 'tilbud' },
+          { name: 'Bulgur', quantity: '115g' },
+          { name: 'Feta', quantity: '80g', note: 'smuldret' },
+          { name: 'Tomat', quantity: '2–3 stk', note: 'i tern' },
+          { name: 'Agurk', quantity: '1 stk', note: 'i tern' },
+          { name: 'Spidskommen', quantity: '1 tsk' },
+          { name: 'Paprika', quantity: '1 tsk' },
+          { name: 'Citronsaft', quantity: '1–2 tsk' },
+          { name: 'Extra virgin olivenolie', quantity: '1 spsk' },
+          { name: 'Salt og peber', quantity: 'efter smag' },
+        ],
+      },
     },
     steps: [
       { text: 'Kog bulguren efter pakkens anvisning. De fleste typer bulgur skal blot hældes over med kogende vand og stå tildækket i 10–12 minutter.' },
@@ -380,6 +467,22 @@ export const RECIPES: Recipe[] = [
           { name: 'Salt og peber', quantity: 'efter smag' },
         ],
       },
+      combined: {
+        nutrition: { kj: '2000 / 3620', fat: '24 / 42', carbs: '37 / 64', protein: '30 / 52', fiber: '5 / 9' },
+        ingredients: [
+          { name: 'Hakket kalv/flæsk', quantity: '350g', note: 'tilbud' },
+          { name: 'Tortilla wraps', quantity: '3 stk' },
+          { name: 'Spidskål', quantity: '275g', note: 'fintsnittet' },
+          { name: 'Tomat', quantity: '2 stk', note: 'i små tern' },
+          { name: 'Agurk', quantity: '1 stk', note: 'i tynde skiver eller små tern' },
+          { name: 'Yoghurt', quantity: '3 spsk' },
+          { name: 'Spidskommen', quantity: '1 tsk' },
+          { name: 'Paprika', quantity: '1 tsk' },
+          { name: 'Citron- eller limesaft', quantity: '1–2 tsk' },
+          { name: 'Extra virgin olivenolie', quantity: '1 spsk' },
+          { name: 'Salt og peber', quantity: 'efter smag' },
+        ],
+      },
     },
     steps: [
       { text: 'Snit spidskålen fint. Skær tomat og agurk ud. Bland yoghurt med citron- eller limesaft, lidt salt og lidt peber.' },
@@ -424,6 +527,21 @@ export const RECIPES: Recipe[] = [
           { name: 'Agurk', quantity: '1 stk', note: 'i tern' },
           { name: 'Spidskommen', quantity: '1,5 tsk' },
           { name: 'Paprika', quantity: '1,5 tsk' },
+          { name: 'Citronsaft', quantity: '1–2 tsk' },
+          { name: 'Extra virgin olivenolie', quantity: '1 spsk' },
+          { name: 'Salt og peber', quantity: 'efter smag' },
+        ],
+      },
+      combined: {
+        nutrition: { kj: '2000 / 3500', fat: '22 / 40', carbs: '40 / 70', protein: '32 / 54', fiber: '4 / 7' },
+        ingredients: [
+          { name: 'Hakket kalv/flæsk', quantity: '350g', note: 'tilbud' },
+          { name: 'Couscous', quantity: '115g' },
+          { name: 'Feta', quantity: '80g', note: 'i små tern' },
+          { name: 'Tomat', quantity: '2–3 stk', note: 'i tern' },
+          { name: 'Agurk', quantity: '1 stk', note: 'i tern' },
+          { name: 'Spidskommen', quantity: '1 tsk' },
+          { name: 'Paprika', quantity: '1 tsk' },
           { name: 'Citronsaft', quantity: '1–2 tsk' },
           { name: 'Extra virgin olivenolie', quantity: '1 spsk' },
           { name: 'Salt og peber', quantity: 'efter smag' },

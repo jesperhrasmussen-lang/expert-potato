@@ -291,20 +291,27 @@ export function MealSearchForm() {
       <div className="toggle-stack">
         <div className="toggle-group">
           <span className="toggle-label">Måltidsstørrelse</span>
-          <div className="toggle-control">
+          <div className="toggle-control toggle-control-three">
             <button
               type="button"
               className={`toggle-btn ${portionSize === 'small' ? 'toggle-active' : ''}`}
               onClick={() => setPortionSize('small')}
             >
-              soft girl · 2000 kJ
+              soft girl
+            </button>
+            <button
+              type="button"
+              className={`toggle-btn ${portionSize === 'combined' ? 'toggle-active' : ''}`}
+              onClick={() => setPortionSize('combined')}
+            >
+              soft girl + gymbro
             </button>
             <button
               type="button"
               className={`toggle-btn ${portionSize === 'large' ? 'toggle-active' : ''}`}
               onClick={() => setPortionSize('large')}
             >
-              gymbro · 3500 kJ
+              gymbro
             </button>
           </div>
         </div>

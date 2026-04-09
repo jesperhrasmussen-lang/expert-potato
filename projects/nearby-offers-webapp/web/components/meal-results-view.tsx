@@ -5,9 +5,7 @@ import { useState } from 'react';
 
 import type { MeatDeal, MealCandidate, MealSearchResponse, PortionSize } from '@/types/meal-optimizer-types';
 import { getRecipesForMeat } from '@/lib/recipes';
-import type { Recipe } from '@/lib/recipes';
-
-type SizeKey = 'small' | 'large';
+import type { Recipe, SizeKey, Nutrition } from '@/lib/recipes';
 
 function formatDistance(meters: number) {
   return `${meters} meter`;
@@ -90,7 +88,7 @@ function DealCard({ deal, rank, organicOnly, sizeKey }: { deal: ExtendedDeal; ra
             {organicOnly ? `Økologisk ${deal.meatFamilyName.toLowerCase()}` : deal.meatFamilyName} · {deal.priceDkk}kr
           </p>
           <p className="meal-card-line1">
-            {deal.storeName} · {formatDistance(deal.distanceMeters)} · ~{deal.pricePerMeal}kr/måltid · {deal.servings} måltider
+            {deal.storeName} · {formatDistance(deal.distanceMeters)} · ~{deal.pricePerMeal}kr/måltid
           </p>
         </div>
       </div>
@@ -120,7 +118,7 @@ function DealCard({ deal, rank, organicOnly, sizeKey }: { deal: ExtendedDeal; ra
             className="secondary-button recipe-back-btn"
             onClick={onCloseRecipe}
           >
-            ← Vælg opskrift
+            Tilbage til resultaterne
           </button>
           <RecipeDetail recipe={recipes[selectedIdx]} sizeKey={sizeKey} />
         </>
@@ -129,9 +127,22 @@ function DealCard({ deal, rank, organicOnly, sizeKey }: { deal: ExtendedDeal; ra
   );
 }
 
+function NutritionBar({ label, nutrition }: { label: string; nutrition: Nutrition }) {
+  return (
+    <div className="nutrition-bar">
+      <span className="nutrition-label">{label}</span>
+      <span>{nutrition.kj} kJ</span>
+      <span>{nutrition.fat}g fedt</span>
+      <span>{nutrition.carbs}g kulhydrat</span>
+      <span>{nutrition.protein}g protein</span>
+      <span>{nutrition.fiber}g fiber</span>
+    </div>
+  );
+}
+
 function RecipeDetail({ recipe, sizeKey }: { recipe: Recipe; sizeKey: SizeKey }) {
   const variant = recipe.portions[sizeKey];
-  const n = variant.nutrition;
+  const isCombined = sizeKey === 'combined';
 
   return (
     <div className="meal-card-detail">
@@ -140,14 +151,14 @@ function RecipeDetail({ recipe, sizeKey }: { recipe: Recipe; sizeKey: SizeKey })
         <p className="recipe-subtitle">{recipe.subtitle} · {recipe.time}</p>
       </div>
 
-      <div className="nutrition-bar">
-        <span className="nutrition-label">Pr. portion:</span>
-        <span>{n.kj} kJ</span>
-        <span>{n.fat}g fedt</span>
-        <span>{n.carbs}g kulhydrat</span>
-        <span>{n.protein}g protein</span>
-        <span>{n.fiber}g fiber</span>
-      </div>
+      {isCombined ? (
+        <div className="nutrition-stack">
+          <NutritionBar label="Soft girl:" nutrition={recipe.portions.small.nutrition} />
+          <NutritionBar label="Gymbro:" nutrition={recipe.portions.large.nutrition} />
+        </div>
+      ) : (
+        <NutritionBar label="Pr. portion:" nutrition={variant.nutrition} />
+      )}
 
       <div className="recipe-section">
         <span className="meal-card-pantry-label">Ingredienser</span>
@@ -197,7 +208,7 @@ function EmptyState() {
 
 export function MealResultsView({ data, organicOnly, portionSize }: { data: MealSearchResponse; organicOnly?: boolean; portionSize?: PortionSize }) {
   const deals = extractBestDeals(data.candidates);
-  const sizeKey: SizeKey = portionSize === 'large' ? 'large' : 'small';
+  const sizeKey: SizeKey = portionSize === 'large' ? 'large' : portionSize === 'combined' ? 'combined' : 'small';
 
   return (
     <div className="results-layout">
