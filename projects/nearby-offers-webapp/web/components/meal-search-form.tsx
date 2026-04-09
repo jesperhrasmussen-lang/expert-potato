@@ -305,21 +305,21 @@ export function MealSearchForm() {
       {/* Toggles — one per line, centered */}
       <div className="toggle-stack">
         <div className="toggle-group">
-          <span className="toggle-label">Måltidsstørrelse</span>
+          <span className="toggle-label">Måltidsstørrelse i opskrifterne</span>
           <div className="toggle-control">
             <button
               type="button"
               className={`toggle-btn ${portionSize === 'small' ? 'toggle-active' : ''}`}
               onClick={() => setPortionSize('small')}
             >
-              soft girl
+              2 x 2000 kJ
             </button>
             <button
               type="button"
               className={`toggle-btn ${portionSize === 'large' ? 'toggle-active' : ''}`}
               onClick={() => setPortionSize('large')}
             >
-              gymbro
+              2 x 3500 kJ
             </button>
           </div>
           <button
@@ -327,7 +327,7 @@ export function MealSearchForm() {
             className={`toggle-btn toggle-btn-wide ${portionSize === 'combined' ? 'toggle-active' : ''}`}
             onClick={() => setPortionSize('combined')}
           >
-            soft girl + gymbro
+            2000 kJ + 3500 kJ
           </button>
         </div>
 
