@@ -331,7 +331,7 @@ export function MealSearchForm() {
           </button>
         </div>
 
-        <div className="toggle-group">
+        <div className="toggle-group toggle-group-spaced">
           <div className="toggle-control">
             <button
               type="button"

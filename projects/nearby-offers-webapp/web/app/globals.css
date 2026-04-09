@@ -282,6 +282,10 @@ button, input {
   max-width: 320px;
 }
 
+.toggle-group-spaced {
+  margin-top: 7px;
+}
+
 .toggle-label {
   font-size: 0.75rem;
   font-weight: 600;
