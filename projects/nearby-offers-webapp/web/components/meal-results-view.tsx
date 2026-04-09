@@ -7,9 +7,9 @@ import type { MeatDeal, MealCandidate, MealSearchResponse } from '@/types/meal-o
 import { getRecipeForMeat } from '@/lib/recipes';
 import type { Recipe } from '@/lib/recipes';
 
-function formatDistance(meters: number) {
-  if (meters < 1000) return `${meters}m`;
-  return `${(meters / 1000).toFixed(1)}km`;
+function formatWalkingTime(meters: number) {
+  const minutes = Math.max(1, Math.round(meters / 80));
+  return minutes === 1 ? '1 minut' : `${minutes} minutter`;
 }
 
 interface ExtendedDeal extends MeatDeal {
@@ -71,7 +71,7 @@ function DealCard({ deal, rank }: { deal: ExtendedDeal; rank: number }) {
             {deal.meatFamilyName} · {deal.priceDkk}kr
           </p>
           <p className="meal-card-line1">
-            {deal.storeName} · {formatDistance(deal.distanceMeters)} · {deal.servings} mltd · ~{deal.pricePerMeal}kr/mltd
+            {deal.storeName} · {formatWalkingTime(deal.distanceMeters)} · ~{deal.pricePerMeal}kr/måltid · {deal.servings} måltider
           </p>
         </div>
       </div>
@@ -163,11 +163,9 @@ export function MealResultsView({ data }: { data: MealSearchResponse }) {
     <div className="results-layout">
       {deals.length > 0 ? (
         <section className="panel">
-          <div className="section-head">
-            <h3 className="section-title-sm">Kødtilbud nær dig · <span className="muted-inline">tryk for opskrift</span></h3>
+          <div className="section-head section-head-right">
             <Link className="link-button section-back-link" href="/">Ny søgning</Link>
           </div>
-          <p className="section-note">Køb kød på tilbud + selvvalgte grøntsager (~25kr) + sauce fra skabet</p>
           <div className="stack-list">
             {deals.map((deal, i) => (
               <DealCard key={deal.meatFamilyId} deal={deal} rank={i + 1} />

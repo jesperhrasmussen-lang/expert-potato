@@ -301,6 +301,10 @@ button, input {
   margin-bottom: 16px;
 }
 
+.section-head-right {
+  justify-content: flex-end;
+}
+
 .section-head h2,
 .group-block h3,
 .store-card h3,
