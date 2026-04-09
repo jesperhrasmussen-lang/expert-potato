@@ -248,16 +248,14 @@ export function MealSearchForm() {
               className={`toggle-btn ${portionSize === 'small' ? 'toggle-active' : ''}`}
               onClick={() => setPortionSize('small')}
             >
-              <span className="toggle-main">Lille</span>
-              <span className="toggle-sub">soft girl · 2500 kJ</span>
+              soft girl · 2500 kJ
             </button>
             <button
               type="button"
               className={`toggle-btn ${portionSize === 'large' ? 'toggle-active' : ''}`}
               onClick={() => setPortionSize('large')}
             >
-              <span className="toggle-main">Stor</span>
-              <span className="toggle-sub">gymbro · 3000 kJ</span>
+              gymbro · 3000 kJ
             </button>
           </div>
         </div>
