@@ -5,6 +5,7 @@ import type { MealSearchRequest, PortionSize } from '@/types/meal-optimizer-type
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
+export const maxDuration = 30;
 
 const VALID_PORTION_SIZES: PortionSize[] = ['small', 'medium', 'large'];
 
@@ -28,9 +29,14 @@ export async function POST(request: Request) {
     try {
       const response = await executeMealSearch(body);
       return NextResponse.json(response, { status: 200 });
-    } catch {
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : '';
+      const isTimeout = msg.includes('timeout') || msg.includes('abort');
       return NextResponse.json(
-        { error: 'Servicen er midlertidigt nede. Prøv igen om lidt.' },
+        { error: isTimeout
+            ? 'Søgningen tog for lang tid. Prøv igen — andet forsøg er hurtigere.'
+            : 'Servicen er midlertidigt nede. Prøv igen om lidt.'
+        },
         { status: 503 },
       );
     }
