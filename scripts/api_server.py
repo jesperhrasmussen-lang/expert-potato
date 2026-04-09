@@ -98,17 +98,15 @@ async def meal_search(req: MealSearchRequest):
     conn = sqlite3.connect(str(DB_PATH))
     conn.row_factory = sqlite3.Row
 
-    valid_states = ('active', 'undated', 'upcoming')
-    placeholders = ','.join('?' for _ in valid_states)
     if req.organicOnly:
         all_active = conn.execute(
-            f"SELECT * FROM offers WHERE expires_at >= ? AND offer_state IN ({placeholders}) AND is_organic = 1",
-            [today, *valid_states],
+            "SELECT * FROM offers WHERE expires_at >= ? AND offer_state = 'active' AND is_organic = 1",
+            [today],
         ).fetchall()
     else:
         all_active = conn.execute(
-            f"SELECT * FROM offers WHERE expires_at >= ? AND offer_state IN ({placeholders})",
-            [today, *valid_states],
+            "SELECT * FROM offers WHERE expires_at >= ? AND offer_state = 'active'",
+            [today],
         ).fetchall()
     conn.close()
 

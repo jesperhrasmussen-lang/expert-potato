@@ -73,13 +73,19 @@ def offer_state(run_from: Optional[str], run_till: Optional[str]) -> str:
     now = datetime.now(timezone.utc)
     start = parse_dt(run_from)
     end = parse_dt(run_till)
-    if start and now < start:
-        return 'upcoming'
     if end and now > end:
         return 'expired'
+    if start and now < start:
+        # Danish flyers often start at midnight CET/CEST (UTC+1/+2).
+        # Treat as active if starting within 24h.
+        from datetime import timedelta
+        if (start - now) < timedelta(hours=24):
+            return 'active'
+        return 'upcoming'
     if start or end:
         return 'active'
-    return 'undated'
+    # No dates — if it's in a current flyer, treat as active
+    return 'active'
 
 
 def normalize_tjek_offer(offer: Dict[str, Any], query: str) -> Dict[str, Any]:
