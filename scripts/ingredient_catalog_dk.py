@@ -97,8 +97,15 @@ def text_matches_family(text: Any, family: str) -> bool:
     if not low:
         return False
     if family == 'minced-beef':
-        has_beef = 'okse' in low and 'kalv' not in low and 'svin' not in low and 'gris' not in low and 'flaesk' not in low
-        return has_beef and (_has_minced(low) or 'kologisk' in low)
+        no_other_meat = 'kalv' not in low and 'svin' not in low and 'gris' not in low and 'flaesk' not in low
+        has_beef = 'okse' in low and no_other_meat
+        # Match: hakket oksekød, HK. oksekød, økologisk oksekød
+        if has_beef and (_has_minced(low) or 'kologisk' in low):
+            return True
+        # Burgerbøffer, tykstegsbøffer, ribeye are implicitly beef
+        if no_other_meat and ('burgerboeffer' in low or 'tykstegsboeffer' in low or 'ribeye' in low):
+            return True
+        return False
     if family == 'minced-pork':
         return _has_minced(low) and ('svin' in low or 'svine' in low or 'grise' in low or 'gris' in low)
     if family == 'minced-veal-pork':
