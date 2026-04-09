@@ -15,11 +15,8 @@ import type {
 } from '@/types/meal-optimizer-types';
 
 const VPS_API_URL = process.env.VPS_API_URL || 'http://187.124.179.86:8081';
-const MAX_STORE_PAIR_METERS = 300;
-const FALLBACK_STORE_PAIR_METERS = 600;
 const DEFAULT_CHAIN_DISTANCE_RADIUS_KM = 20;
 const RESULT_LIMIT = 10;
-const MIN_RESULTS_BEFORE_FALLBACK = 3;
 
 const PORTION_MULTIPLIERS: Record<PortionSize, { meat: number; vegetable: number }> = {
   small:  { meat: 125 / 150, vegetable: 250 / 300 },
@@ -66,13 +63,6 @@ interface RawPayload {
   offers: RawOffer[];
 }
 
-interface CandidateStoreSet {
-  key: string;
-  stores: StoreOption[];
-  interStoreDistanceMeters: number | null;
-  walkingDistanceMeters: number;
-}
-
 interface FamilyOfferChoice {
   ingredientFamily: IngredientFamily;
   requiredQuantity: IngredientQuantity;
@@ -91,35 +81,21 @@ export async function executeMealSearch(request: MealSearchRequest): Promise<Mea
   const payload = await fetchFromVpsApi(request);
   const stores = buildStores(payload.places, payload.offers);
   const activeOffers = payload.offers.filter((offer) => offer.offerState === 'active');
+  const storesByChainId = new Map(stores.map((store) => [store.chainId, store]));
 
-  function buildCandidatesWithPairDistance(maxPairMeters: number) {
-    const storeSets = buildStoreSets(stores, request.includeStorePairs, maxPairMeters);
-    return {
-      storeSets,
-      candidates: storeSets.flatMap((storeSet) =>
-        catalog.recipeTemplates.flatMap((recipeTemplate) =>
-          buildCandidatesForStoreSet({
-            storeSet,
-            recipeTemplate,
-            storesByChainId: new Map(stores.map((store) => [store.chainId, store])),
-            activeOffers,
-            ingredientFamilyById: catalog.ingredientFamilyById,
-            conversionRules: catalog.conversionRules,
-            portionSize,
-          }),
-        ),
-      ),
-    };
-  }
-
-  let { storeSets, candidates } = buildCandidatesWithPairDistance(MAX_STORE_PAIR_METERS);
-
-  // Fallback to wider pair distance if too few results
-  if (candidates.length < MIN_RESULTS_BEFORE_FALLBACK && request.includeStorePairs) {
-    const fallback = buildCandidatesWithPairDistance(FALLBACK_STORE_PAIR_METERS);
-    storeSets = fallback.storeSets;
-    candidates = fallback.candidates;
-  }
+  const candidates = stores.flatMap((store) =>
+    catalog.recipeTemplates.flatMap((recipeTemplate) =>
+      buildCandidatesForStore({
+        store,
+        recipeTemplate,
+        storesByChainId,
+        activeOffers,
+        ingredientFamilyById: catalog.ingredientFamilyById,
+        conversionRules: catalog.conversionRules,
+        portionSize,
+      }),
+    ),
+  );
 
   const deduped = dedupeCandidates(candidates).sort(compareCandidates);
   const limited = deduped.slice(0, RESULT_LIMIT);
@@ -132,7 +108,6 @@ export async function executeMealSearch(request: MealSearchRequest): Promise<Mea
       generatedAt: new Date().toISOString(),
       totalCandidates: limited.length,
       totalStoresInScope: stores.length,
-      totalStorePairsConsidered: storeSets.filter((set) => set.stores.length === 2).length,
     },
   };
 }
@@ -146,7 +121,6 @@ async function fetchFromVpsApi(request: MealSearchRequest): Promise<RawPayload> 
       radiusKm: resolveRadiusKm(request),
       maxWalkKm: request.maxWalkKm,
       maxTransitMin: request.maxTransitMin,
-      includeStorePairs: request.includeStorePairs,
       portionSize: request.portionSize,
       organicOnly: request.organicOnly,
     }),
@@ -191,37 +165,8 @@ function buildStores(places: RawPlace[], offers: RawOffer[]): StoreOption[] {
   return [...stores.values()].sort((a, b) => a.distanceMeters - b.distanceMeters);
 }
 
-function buildStoreSets(stores: StoreOption[], includePairs: boolean, maxPairMeters: number = MAX_STORE_PAIR_METERS): CandidateStoreSet[] {
-  const singles = stores.map((store) => ({
-    key: store.storeId,
-    stores: [store],
-    interStoreDistanceMeters: null,
-    walkingDistanceMeters: store.distanceMeters,
-  }));
-
-  if (!includePairs) return singles;
-
-  const pairs: CandidateStoreSet[] = [];
-  for (let i = 0; i < stores.length; i += 1) {
-    for (let j = i + 1; j < stores.length; j += 1) {
-      const a = stores[i];
-      const b = stores[j];
-      const pairDistanceMeters = haversineMeters((a as StoreOption & { lat?: number; lon?: number }).lat, (a as StoreOption & { lat?: number; lon?: number }).lon, (b as StoreOption & { lat?: number; lon?: number }).lat, (b as StoreOption & { lat?: number; lon?: number }).lon);
-      if (pairDistanceMeters === null || pairDistanceMeters > maxPairMeters) continue;
-      pairs.push({
-        key: `${a.storeId}+${b.storeId}`,
-        stores: [a, b],
-        interStoreDistanceMeters: pairDistanceMeters,
-        walkingDistanceMeters: Math.min(a.distanceMeters, b.distanceMeters) + pairDistanceMeters,
-      });
-    }
-  }
-
-  return [...singles, ...pairs];
-}
-
-function buildCandidatesForStoreSet(params: {
-  storeSet: CandidateStoreSet;
+function buildCandidatesForStore(params: {
+  store: StoreOption;
   recipeTemplate: RecipeTemplate;
   storesByChainId: Map<string, StoreOption>;
   activeOffers: RawOffer[];
@@ -229,13 +174,13 @@ function buildCandidatesForStoreSet(params: {
   conversionRules: Parameters<typeof computeMealPricing>[0]['conversionRules'];
   portionSize: PortionSize;
 }): MealCandidate[] {
-  const { storeSet, recipeTemplate, storesByChainId, activeOffers, ingredientFamilyById, conversionRules, portionSize } = params;
+  const { store, recipeTemplate, storesByChainId, activeOffers, ingredientFamilyById, conversionRules, portionSize } = params;
   const scopedOffers = activeOffers.filter((offer) =>
-    storeSet.stores.some((store) => normalizeChainId(offer.storeNormalized || offer.store || '') === store.chainId),
+    normalizeChainId(offer.storeNormalized || offer.store || '') === store.chainId,
   );
 
   const slotChoices = recipeTemplate.slots.map((slot) =>
-    resolveSlotChoices(slot, scopedOffers, ingredientFamilyById, storesByChainId, portionSize, storeSet),
+    resolveSlotChoices(slot, scopedOffers, ingredientFamilyById, storesByChainId, portionSize, store),
   );
 
   if (slotChoices.some((choices) => choices.length === 0)) {
@@ -246,23 +191,6 @@ function buildCandidatesForStoreSet(params: {
   const candidates: MealCandidate[] = [];
 
   for (const combination of combinations) {
-    const selectedStores = new Map<string, StoreOption>();
-    for (const choice of combination) {
-      selectedStores.set(choice.store.storeId, choice.store);
-    }
-
-    if (storeSet.stores.length === 2 && selectedStores.size < 2) {
-      continue;
-    }
-
-    // Skip two-store combos where only one store contributes real (non-estimated) offers
-    if (storeSet.stores.length === 2) {
-      const realOfferStores = new Set(
-        combination.filter((c) => !c.estimated).map((c) => c.store.storeId),
-      );
-      if (realOfferStores.size < 2) continue;
-    }
-
     const pricing = computeMealPricing({
       recipeTemplate,
       selectedIngredients: combination.map<SelectedRecipeIngredient>((choice) => ({
@@ -300,19 +228,15 @@ function buildCandidatesForStoreSet(params: {
     });
 
     candidates.push({
-      candidateId: `${recipeTemplate.id}:${[...selectedStores.keys()].sort().join('+')}:${chosenIngredients.map((item) => item.ingredientFamilyId).join('+')}`,
+      candidateId: `${recipeTemplate.id}:${store.storeId}:${chosenIngredients.map((item) => item.ingredientFamilyId).join('+')}`,
       recipeTemplateId: recipeTemplate.id,
       recipeName: renderRecipeName(chosenIngredients),
       servingsPerBatch: recipeTemplate.servingsPerBatch,
       basketCostDkk: pricing.basketCostDkk,
       recipeCostDkk: pricing.recipeCostDkk,
       pricePerMealDkk: pricing.pricePerMealDkk,
-      storesUsed: [...selectedStores.values()].sort((a, b) => a.distanceMeters - b.distanceMeters),
-      interStoreDistanceMeters: selectedStores.size === 2 ? storeSet.interStoreDistanceMeters : null,
-      walkingDistanceMeters:
-        selectedStores.size === 2
-          ? storeSet.walkingDistanceMeters
-          : [...selectedStores.values()][0]?.distanceMeters ?? storeSet.walkingDistanceMeters,
+      storesUsed: [store],
+      walkingDistanceMeters: store.distanceMeters,
       chosenIngredients,
       basketLines,
       sauceType: recipeTemplate.sauceType,
@@ -330,7 +254,7 @@ function resolveSlotChoices(
   ingredientFamilyById: Map<string, IngredientFamily>,
   storesByChainId: Map<string, StoreOption>,
   portionSize: PortionSize = 'medium',
-  storeSet?: CandidateStoreSet,
+  fallbackStore?: StoreOption,
 ) {
   return slot.allowedFamilies.flatMap((allowed) => {
     const ingredientFamily = ingredientFamilyById.get(allowed.ingredientFamilyId);
@@ -373,7 +297,7 @@ function resolveSlotChoices(
     if (matchingOffers.length) return [matchingOffers[0]];
 
     // Fallback: generate estimated offer from reference price when no real offer exists
-    if (ingredientFamily.referencePricePerKg && ingredientFamily.referencePackageG && storeSet) {
+    if (ingredientFamily.referencePricePerKg && ingredientFamily.referencePackageG && fallbackStore) {
       const packageG = ingredientFamily.referencePackageG;
       const estimatedPrice = Math.round(ingredientFamily.referencePricePerKg * (packageG / 1000) * ESTIMATED_PRICE_MARKUP);
       const syntheticOffer: RawOffer = {
@@ -384,7 +308,6 @@ function resolveSlotChoices(
         comparisonGroup: ingredientFamily.id,
         offerState: 'active',
       };
-      const fallbackStore = storeSet.stores[0];
       return [{
         slotKey: slot.slotKey,
         ingredientFamily,
@@ -538,24 +461,6 @@ function resolveRadiusKm(request: MealSearchRequest): number {
   if (request.maxWalkKm !== null) return Math.max(request.maxWalkKm * 2, DEFAULT_CHAIN_DISTANCE_RADIUS_KM);
   if (request.maxTransitMin !== null) return DEFAULT_CHAIN_DISTANCE_RADIUS_KM;
   return DEFAULT_CHAIN_DISTANCE_RADIUS_KM;
-}
-
-function haversineMeters(lat1?: number, lon1?: number, lat2?: number, lon2?: number) {
-  if ([lat1, lon1, lat2, lon2].some((value) => value === undefined || value === null)) {
-    return null;
-  }
-  const toRad = (value: number) => (value * Math.PI) / 180;
-  const earthRadiusMeters = 6371000;
-  const dLat = toRad((lat2 as number) - (lat1 as number));
-  const dLon = toRad((lon2 as number) - (lon1 as number));
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(toRad(lat1 as number)) *
-      Math.cos(toRad(lat2 as number)) *
-      Math.sin(dLon / 2) *
-      Math.sin(dLon / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return Math.round(earthRadiusMeters * c);
 }
 
 function cartesianProduct<T>(collections: T[][]): T[][] {

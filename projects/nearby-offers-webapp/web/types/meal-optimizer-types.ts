@@ -28,7 +28,6 @@ export interface MealSearchRequest {
   radiusKm: number | null;
   maxWalkKm: number | null;
   maxTransitMin: number | null;
-  includeStorePairs: boolean;
   portionSize: PortionSize;
   organicOnly: boolean;
 }
@@ -77,12 +76,6 @@ export interface StoreOption {
   distanceMeters: number;
 }
 
-export interface StorePairOption {
-  storeA: StoreOption;
-  storeB: StoreOption;
-  interStoreDistanceMeters: number;
-}
-
 export interface BasketLine {
   ingredientFamilyId: string;
   ingredientFamilyName: string;
@@ -110,7 +103,6 @@ export interface MealCandidate {
   recipeCostDkk: number;
   pricePerMealDkk: number;
   storesUsed: StoreOption[];
-  interStoreDistanceMeters: number | null;
   walkingDistanceMeters: number;
   chosenIngredients: {
     slotKey: string;
@@ -128,7 +120,6 @@ export interface MealSearchSummary {
   generatedAt: string;
   totalCandidates: number;
   totalStoresInScope: number;
-  totalStorePairsConsidered: number;
 }
 
 export interface MealSearchResponse {

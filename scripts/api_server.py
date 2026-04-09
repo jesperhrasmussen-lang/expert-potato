@@ -56,7 +56,6 @@ class MealSearchRequest(BaseModel):
     radiusKm: Optional[float] = 20.0
     maxWalkKm: Optional[float] = None
     maxTransitMin: Optional[float] = None
-    includeStorePairs: bool = True
     portionSize: str = "medium"
     organicOnly: bool = False
 

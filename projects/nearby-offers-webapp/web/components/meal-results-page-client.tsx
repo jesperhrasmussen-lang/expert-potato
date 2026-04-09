@@ -19,7 +19,7 @@ function SearchSummaryBanner({ request }: { request: MealSearchRequest }) {
       <div>
         <p className="summary-address-sm">{request.address}</p>
         <p className="summary-subline-sm">
-          {PORTION_LABELS[request.portionSize] || 'Medium'} portion · {request.includeStorePairs ? '1–2 butikker' : '1 butik'}
+          {PORTION_LABELS[request.portionSize] || 'Medium'} portion
         </p>
       </div>
       <Link className="secondary-button link-button section-back-link" href="/">

@@ -9,7 +9,6 @@ const STORAGE_KEY = 'meal-search-prefs';
 
 interface StoredPrefs {
   address: string;
-  includeStorePairs: boolean;
   portionSize: PortionSize;
   organicOnly?: boolean;
 }
@@ -114,7 +113,6 @@ export function MealSearchForm() {
   const router = useRouter();
 
   const [address, setAddress] = useState('');
-  const [includeStorePairs, setIncludeStorePairs] = useState(false);
   const [portionSize, setPortionSize] = useState<PortionSize>('small');
   const [organicOnly, setOrganicOnly] = useState(false);
   const [saveOnDevice, setSaveOnDevice] = useState(false);
@@ -130,7 +128,6 @@ export function MealSearchForm() {
     const prefs = loadPrefs();
     if (prefs) {
       setAddress(prefs.address);
-      setIncludeStorePairs(prefs.includeStorePairs);
       setPortionSize(prefs.portionSize);
       setOrganicOnly(prefs.organicOnly ?? false);
       setSaveOnDevice(true);
@@ -208,14 +205,13 @@ export function MealSearchForm() {
     setShowLocationOption(false);
 
     if (saveOnDevice) {
-      savePrefs({ address, includeStorePairs, portionSize, organicOnly });
+      savePrefs({ address, portionSize, organicOnly });
     } else {
       clearPrefs();
     }
 
     const params = new URLSearchParams({
       address,
-      includeStorePairs: includeStorePairs ? '1' : '0',
       portionSize,
       organicOnly: organicOnly ? '1' : '0',
     });
@@ -303,26 +299,6 @@ export function MealSearchForm() {
               onClick={() => setPortionSize('large')}
             >
               gymbro · 3500 kJ
-            </button>
-          </div>
-        </div>
-
-        <div className="toggle-group">
-          <span className="toggle-label">Butikker</span>
-          <div className="toggle-control">
-            <button
-              type="button"
-              className={`toggle-btn ${!includeStorePairs ? 'toggle-active' : ''}`}
-              onClick={() => setIncludeStorePairs(false)}
-            >
-              1 butik
-            </button>
-            <button
-              type="button"
-              className={`toggle-btn ${includeStorePairs ? 'toggle-active' : ''}`}
-              onClick={() => setIncludeStorePairs(true)}
-            >
-              2 butikker
             </button>
           </div>
         </div>

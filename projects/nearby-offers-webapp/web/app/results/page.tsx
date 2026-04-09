@@ -21,7 +21,6 @@ export default async function ResultsPage({
     radiusKm: null,
     maxWalkKm: null,
     maxTransitMin: null,
-    includeStorePairs: params.includeStorePairs !== '0',
     portionSize,
     organicOnly: params.organicOnly === '1',
   };
