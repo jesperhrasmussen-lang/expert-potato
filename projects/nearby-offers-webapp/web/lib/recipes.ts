@@ -36,6 +36,9 @@ export interface Recipe {
   steps: RecipeStep[];
 }
 
+// Nutrition calculated per portion (recipe ÷ 2) using standard Danish food tables.
+// Meat fat%: svinekød 10%, oksekød 12%, kalv/flæsk 12%. Fløde 13%.
+
 export const RECIPES: Recipe[] = [
   {
     meatFamily: 'chicken-fillet',
@@ -45,11 +48,12 @@ export const RECIPES: Recipe[] = [
     servings: 2,
     portions: {
       small: {
-        nutrition: { kj: '2500', fat: '15–20', carbs: '65', protein: '40–44', fiber: '5' },
+        // 250g kylling + 150g pasta + 400g broccoli + 1dl fløde 13% + 1spsk olie
+        nutrition: { kj: '2510', fat: '17', carbs: '63', protein: '46', fiber: '8' },
         ingredients: [
-          { name: 'Kyllingebryst eller inderfilet', quantity: '220g', note: 'tilbud' },
-          { name: 'Pasta', quantity: '130g', note: 'penne eller fusilli' },
-          { name: 'Broccoli', quantity: '350g', note: 'i små buketter' },
+          { name: 'Kyllingebryst eller inderfilet', quantity: '250g', note: 'tilbud' },
+          { name: 'Pasta', quantity: '150g', note: 'penne eller fusilli' },
+          { name: 'Broccoli', quantity: '400g', note: 'i små buketter' },
           { name: 'Fløde', quantity: '1 dl' },
           { name: 'Hvidløg', quantity: '2 fed', note: 'fintrevet eller finthakket' },
           { name: 'Citronsaft', quantity: '1–2 tsk' },
@@ -58,10 +62,11 @@ export const RECIPES: Recipe[] = [
         ],
       },
       large: {
-        nutrition: { kj: '3500', fat: '22–28', carbs: '90', protein: '58–64', fiber: '7' },
+        // 350g kylling + 220g pasta + 500g broccoli + 1.5dl fløde + 1spsk olie
+        nutrition: { kj: '3480', fat: '22', carbs: '90', protein: '64', fiber: '11' },
         ingredients: [
           { name: 'Kyllingebryst eller inderfilet', quantity: '350g', note: 'tilbud' },
-          { name: 'Pasta', quantity: '200g', note: 'penne eller fusilli' },
+          { name: 'Pasta', quantity: '220g', note: 'penne eller fusilli' },
           { name: 'Broccoli', quantity: '500g', note: 'i små buketter' },
           { name: 'Fløde', quantity: '1,5 dl' },
           { name: 'Hvidløg', quantity: '3 fed', note: 'fintrevet eller finthakket' },
@@ -91,10 +96,11 @@ export const RECIPES: Recipe[] = [
     servings: 2,
     portions: {
       small: {
-        nutrition: { kj: '2500', fat: '20–24', carbs: '62', protein: '36–40', fiber: '4' },
+        // 350g svinekød 10% + 120g ris + 350g spidskål + soja/honning + 2tsk olie
+        nutrition: { kj: '2600', fat: '23', carbs: '63', protein: '40', fiber: '4' },
         ingredients: [
-          { name: 'Hakket svinekød', quantity: '300g', note: 'tilbud' },
-          { name: 'Jasminris', quantity: '130g' },
+          { name: 'Hakket svinekød', quantity: '350g', note: 'tilbud' },
+          { name: 'Jasminris', quantity: '120g' },
           { name: 'Spidskål', quantity: '350g', note: 'fintsnittet' },
           { name: 'Sojasauce', quantity: '2 spsk' },
           { name: 'Honning', quantity: '2 tsk' },
@@ -105,10 +111,11 @@ export const RECIPES: Recipe[] = [
         ],
       },
       large: {
-        nutrition: { kj: '3500', fat: '30–36', carbs: '88', protein: '50–56', fiber: '5' },
+        // 450g svinekød + 170g ris + 500g spidskål + soja/honning + 1spsk olie
+        nutrition: { kj: '3540', fat: '30', carbs: '90', protein: '52', fiber: '6' },
         ingredients: [
           { name: 'Hakket svinekød', quantity: '450g', note: 'tilbud' },
-          { name: 'Jasminris', quantity: '200g' },
+          { name: 'Jasminris', quantity: '170g' },
           { name: 'Spidskål', quantity: '500g', note: 'fintsnittet' },
           { name: 'Sojasauce', quantity: '3 spsk' },
           { name: 'Honning', quantity: '1 spsk' },
@@ -145,10 +152,11 @@ export const RECIPES: Recipe[] = [
     servings: 2,
     portions: {
       small: {
-        nutrition: { kj: '2500', fat: '18–24', carbs: '65–70', protein: '38–42', fiber: '5–6' },
+        // 300g oksekød 12% + 120g pasta + 200g gulerødder + 400g tomater + 1 løg + 1spsk olie
+        nutrition: { kj: '2800', fat: '26', carbs: '66', protein: '41', fiber: '8' },
         ingredients: [
-          { name: 'Hakket oksekød', quantity: '250g', note: 'tilbud' },
-          { name: 'Pasta', quantity: '130g', note: 'fusilli, penne eller spaghetti' },
+          { name: 'Hakket oksekød', quantity: '300g', note: 'tilbud' },
+          { name: 'Pasta', quantity: '120g', note: 'fusilli, penne eller spaghetti' },
           { name: 'Flåede tomater', quantity: '1 dåse', note: '400g' },
           { name: 'Gulerødder', quantity: '200g', note: 'i små tern' },
           { name: 'Løg', quantity: '1 stk', note: 'finthakket' },
@@ -160,10 +168,11 @@ export const RECIPES: Recipe[] = [
         ],
       },
       large: {
-        nutrition: { kj: '3500', fat: '28–34', carbs: '88–95', protein: '54–60', fiber: '6–8' },
+        // 400g oksekød + 170g pasta + 250g gulerødder + 400g tomater + 1 løg + 1spsk olie
+        nutrition: { kj: '3600', fat: '32', carbs: '86', protein: '54', fiber: '9' },
         ingredients: [
           { name: 'Hakket oksekød', quantity: '400g', note: 'tilbud' },
-          { name: 'Pasta', quantity: '200g', note: 'fusilli, penne eller spaghetti' },
+          { name: 'Pasta', quantity: '170g', note: 'fusilli, penne eller spaghetti' },
           { name: 'Flåede tomater', quantity: '1 dåse', note: '400g' },
           { name: 'Gulerødder', quantity: '250g', note: 'i små tern' },
           { name: 'Løg', quantity: '1 stk', note: 'finthakket' },
@@ -195,10 +204,11 @@ export const RECIPES: Recipe[] = [
     servings: 2,
     portions: {
       small: {
-        nutrition: { kj: '2500', fat: '24–28', carbs: '55', protein: '36–40', fiber: '5–6' },
+        // 350g kalv/flæsk 12% + 3 wraps + 250g spidskål + 2 tomat + 1 agurk + 3spsk yoghurt + 1spsk olie
+        nutrition: { kj: '2830', fat: '32', carbs: '53', protein: '40', fiber: '7' },
         ingredients: [
-          { name: 'Hakket kalv/flæsk', quantity: '300g', note: 'tilbud' },
-          { name: 'Tortilla wraps', quantity: '4 stk' },
+          { name: 'Hakket kalv/flæsk', quantity: '350g', note: 'tilbud' },
+          { name: 'Tortilla wraps', quantity: '3 stk' },
           { name: 'Spidskål', quantity: '250g', note: 'fintsnittet' },
           { name: 'Tomat', quantity: '2 stk', note: 'i små tern' },
           { name: 'Agurk', quantity: '1 stk', note: 'i tynde skiver eller små tern' },
@@ -211,11 +221,12 @@ export const RECIPES: Recipe[] = [
         ],
       },
       large: {
-        nutrition: { kj: '3500', fat: '36–42', carbs: '78', protein: '50–56', fiber: '7–8' },
+        // 450g kalv/flæsk + 4 wraps + 350g spidskål + 3 tomat + 1 agurk + 4spsk yoghurt + 1spsk olie
+        nutrition: { kj: '3620', fat: '42', carbs: '64', protein: '52', fiber: '9' },
         ingredients: [
           { name: 'Hakket kalv/flæsk', quantity: '450g', note: 'tilbud' },
-          { name: 'Tortilla wraps', quantity: '6 stk' },
-          { name: 'Spidskål', quantity: '400g', note: 'fintsnittet' },
+          { name: 'Tortilla wraps', quantity: '4 stk' },
+          { name: 'Spidskål', quantity: '350g', note: 'fintsnittet' },
           { name: 'Tomat', quantity: '3 stk', note: 'i små tern' },
           { name: 'Agurk', quantity: '1 stk', note: 'i tynde skiver eller små tern' },
           { name: 'Yoghurt', quantity: '4 spsk' },

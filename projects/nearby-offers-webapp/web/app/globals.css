@@ -756,6 +756,11 @@ button, input {
   font-weight: 600;
 }
 
+.nutrition-label {
+  color: var(--text);
+  font-weight: 700;
+}
+
 .recipe-header {
   margin-bottom: 4px;
 }

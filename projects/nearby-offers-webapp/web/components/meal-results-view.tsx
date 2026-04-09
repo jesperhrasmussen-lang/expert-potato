@@ -105,6 +105,7 @@ function RecipeDetail({ recipe, sizeKey }: { recipe: Recipe; sizeKey: SizeKey })
       </div>
 
       <div className="nutrition-bar">
+        <span className="nutrition-label">Pr. portion:</span>
         <span>{n.kj} kJ</span>
         <span>{n.fat}g fedt</span>
         <span>{n.carbs}g kulhydrat</span>
