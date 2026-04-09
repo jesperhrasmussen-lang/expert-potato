@@ -88,7 +88,7 @@ function DealCard({ deal, rank, organicOnly, sizeKey }: { deal: ExtendedDeal; ra
             {organicOnly ? `Økologisk ${deal.meatFamilyName.toLowerCase()}` : deal.meatFamilyName} · <strong>~{deal.pricePerMeal}kr/måltid</strong>
           </p>
           <p className="meal-card-line1">
-            {deal.storeName} · {formatDistance(deal.distanceMeters)} · {deal.priceDkk}kr
+            {deal.storeName} · {formatDistance(deal.distanceMeters)} · {deal.priceDkk}kr for {deal.packageGrams}g
           </p>
         </div>
       </div>
