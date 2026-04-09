@@ -240,18 +240,18 @@ export const RECIPES: Recipe[] = [
   {
     meatFamily: 'minced-pork',
     title: 'Svinekød med feta, spinat og ris',
-    subtitle: 'Hvidløg, citron og smeltet feta · 2 personer',
+    subtitle: 'Hvidløg, citron og smuldret feta · 2 personer',
     time: '20 min',
     servings: 2,
     portions: {
       small: {
         nutrition: { kj: '2000', fat: '18', carbs: '46', protein: '30', fiber: '3' },
         ingredients: [
-          { name: 'Hakket svinekød', quantity: '250g', note: 'tilbud' },
+          { name: 'Hakket svinekød', quantity: '250g' },
           { name: 'Jasminris', quantity: '90g' },
           { name: 'Frisk spinat', quantity: '200g' },
           { name: 'Feta', quantity: '60g', note: 'smuldret' },
-          { name: 'Hvidløg', quantity: '2 fed', note: 'finthakket' },
+          { name: 'Hvidløg', quantity: '2 fed', note: 'fintrevet eller finthakket' },
           { name: 'Citronsaft', quantity: '1–2 tsk' },
           { name: 'Extra virgin olivenolie', quantity: '2 tsk' },
           { name: 'Salt og peber', quantity: 'efter smag' },
@@ -260,11 +260,11 @@ export const RECIPES: Recipe[] = [
       large: {
         nutrition: { kj: '3500', fat: '32', carbs: '82', protein: '52', fiber: '5' },
         ingredients: [
-          { name: 'Hakket svinekød', quantity: '450g', note: 'tilbud' },
+          { name: 'Hakket svinekød', quantity: '450g' },
           { name: 'Jasminris', quantity: '170g' },
           { name: 'Frisk spinat', quantity: '300g' },
           { name: 'Feta', quantity: '100g', note: 'smuldret' },
-          { name: 'Hvidløg', quantity: '3 fed', note: 'finthakket' },
+          { name: 'Hvidløg', quantity: '3 fed', note: 'fintrevet eller finthakket' },
           { name: 'Citronsaft', quantity: '1–2 tsk' },
           { name: 'Extra virgin olivenolie', quantity: '1 spsk' },
           { name: 'Salt og peber', quantity: 'efter smag' },
@@ -273,11 +273,11 @@ export const RECIPES: Recipe[] = [
       combined: {
         nutrition: { kj: '2000 / 3500', fat: '18 / 32', carbs: '46 / 82', protein: '30 / 52', fiber: '3 / 5' },
         ingredients: [
-          { name: 'Hakket svinekød', quantity: '350g', note: 'tilbud' },
+          { name: 'Hakket svinekød', quantity: '350g' },
           { name: 'Jasminris', quantity: '130g' },
           { name: 'Frisk spinat', quantity: '250g' },
           { name: 'Feta', quantity: '80g', note: 'smuldret' },
-          { name: 'Hvidløg', quantity: '2–3 fed', note: 'finthakket' },
+          { name: 'Hvidløg', quantity: '2–3 fed', note: 'fintrevet eller finthakket' },
           { name: 'Citronsaft', quantity: '1–2 tsk' },
           { name: 'Extra virgin olivenolie', quantity: '1 spsk' },
           { name: 'Salt og peber', quantity: 'efter smag' },
@@ -285,12 +285,12 @@ export const RECIPES: Recipe[] = [
       },
     },
     steps: [
-      { text: 'Kog risene efter pakkens anvisning. Lad dem stå med låg, når de er færdige.' },
-      { text: 'Varm en stor pande op på middel varme med olivenolien. Tilsæt svinekødet og steg 4–5 minutter, til det ikke længere er rosa. Bryd det i mindre stykker undervejs.' },
-      { text: 'Tilsæt hvidløget og rør rundt i 20–30 sekunder.' },
-      { text: 'Tilsæt spinaten og vend rundt i 1–2 minutter, til den er faldet helt sammen.' },
-      { text: 'Sluk varmen. Tilsæt citronsaften og smag til med salt og peber.' },
-      { text: 'Fordel ris på tallerkener. Læg kød og spinat ovenpå, og drys den smuldrede feta over.' },
+      { text: 'Kog risene efter pakkens anvisning. Når de er færdige, lader du dem stå med låg i 5 minutter, så de sætter sig lidt. Løsn dem derefter med en gaffel.' },
+      { text: 'Imens varmer du en stor pande op på middel varme. Tilsæt olivenolien. Når olien ser blank ud, tilsætter du svinekødet. Lad det stege ca. 1 minut uden at røre for meget. Bryd det derefter i mindre stykker og steg videre 3–4 minutter, til det ikke længere er rosa og har fået lidt brun farve nogle steder.' },
+      { text: 'Lad kødet blive på panden. Tilsæt hvidløget og rør rundt i 20–30 sekunder. Hvidløget skal dufte, men må ikke blive brunt.' },
+      { text: 'Tilsæt spinaten lidt ad gangen, hvis den fylder meget. Vend rundt i 1–2 minutter, til den lige er faldet sammen.' },
+      { text: 'Sluk eller sænk varmen helt. Tilsæt citronsaften, og smag til med salt og peber.' },
+      { text: 'Fordel risene på tallerkenerne. Læg svinekød og spinat ovenpå, og smuldr fetaen over til sidst.' },
       { text: 'Server med det samme.' },
     ],
   },
