@@ -51,7 +51,7 @@ function extractBestDeals(candidates: MealCandidate[]): ExtendedDeal[] {
   return [...bestByMeat.values()].sort((a, b) => a.priceDkk - b.priceDkk);
 }
 
-function DealCard({ deal, rank }: { deal: ExtendedDeal; rank: number }) {
+function DealCard({ deal, rank, organicOnly }: { deal: ExtendedDeal; rank: number; organicOnly?: boolean }) {
   const [expanded, setExpanded] = useState(false);
   const recipe = getRecipeForMeat(deal.meatFamilyId);
 
@@ -67,7 +67,7 @@ function DealCard({ deal, rank }: { deal: ExtendedDeal; rank: number }) {
         <span className="meal-card-rank">{rank}</span>
         <div className="meal-card-lines">
           <p className="meal-card-line2">
-            {deal.meatFamilyName} · {deal.priceDkk}kr
+            {organicOnly ? `Økologisk ${deal.meatFamilyName.toLowerCase()}` : deal.meatFamilyName} · {deal.priceDkk}kr
           </p>
           <p className="meal-card-line1">
             {deal.storeName} · {formatDistance(deal.distanceMeters)} · ~{deal.pricePerMeal}kr/måltid · {deal.servings} måltider
@@ -155,7 +155,7 @@ function EmptyState() {
   );
 }
 
-export function MealResultsView({ data }: { data: MealSearchResponse }) {
+export function MealResultsView({ data, organicOnly }: { data: MealSearchResponse; organicOnly?: boolean }) {
   const deals = extractBestDeals(data.candidates);
 
   return (
@@ -167,7 +167,7 @@ export function MealResultsView({ data }: { data: MealSearchResponse }) {
           </div>
           <div className="stack-list">
             {deals.map((deal, i) => (
-              <DealCard key={deal.meatFamilyId} deal={deal} rank={i + 1} />
+              <DealCard key={deal.meatFamilyId} deal={deal} rank={i + 1} organicOnly={organicOnly} />
             ))}
           </div>
         </section>

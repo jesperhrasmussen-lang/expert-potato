@@ -24,49 +24,13 @@
       "category": "meat",
       "displayName": "Kyllingefilet",
       "searchTerms": ["kyllingefilet", "kyllingekød", "kyllingebrystfilet", "kyllingebryst"]
-    },
-    {
-      "id": "broccoli",
-      "category": "vegetable",
-      "displayName": "Broccoli",
-      "searchTerms": ["broccoli", "broccoli buketter", "broccolibuketter"],
-      "referencePricePerKg": 42,
-      "referencePackageG": 500
-    },
-    {
-      "id": "cauliflower",
-      "category": "vegetable",
-      "displayName": "Blomkål",
-      "searchTerms": ["blomkål", "blomkålsbuketter"],
-      "referencePricePerKg": 30,
-      "referencePackageG": 650
-    },
-    {
-      "id": "white-cabbage",
-      "category": "vegetable",
-      "displayName": "Hvidkål",
-      "searchTerms": ["hvidkål"],
-      "referencePricePerKg": 15,
-      "referencePackageG": 1000
-    },
-    {
-      "id": "red-cabbage",
-      "category": "vegetable",
-      "displayName": "Rødkål",
-      "searchTerms": ["rødkål", "roedkaal"],
-      "referencePricePerKg": 15,
-      "referencePackageG": 1000
     }
   ],
   "unitConversionRules": [
     { "ingredientFamilyId": "minced-beef", "baseUnit": "g" },
     { "ingredientFamilyId": "minced-pork", "baseUnit": "g" },
     { "ingredientFamilyId": "minced-veal-pork", "baseUnit": "g" },
-    { "ingredientFamilyId": "chicken-fillet", "baseUnit": "g" },
-    { "ingredientFamilyId": "broccoli", "baseUnit": "g" },
-    { "ingredientFamilyId": "cauliflower", "baseUnit": "g" },
-    { "ingredientFamilyId": "white-cabbage", "baseUnit": "g" },
-    { "ingredientFamilyId": "red-cabbage", "baseUnit": "g" }
+    { "ingredientFamilyId": "chicken-fillet", "baseUnit": "g" }
   ],
   "sauceDefinitions": {
     "cream": {
@@ -83,15 +47,15 @@
     }
   },
   "portionProfiles": {
-    "small":  { "meat": { "value": 125, "unit": "g" }, "vegetable": { "value": 250, "unit": "g" }, "starch": { "value": 75, "unit": "g" } },
-    "medium": { "meat": { "value": 150, "unit": "g" }, "vegetable": { "value": 300, "unit": "g" }, "starch": { "value": 100, "unit": "g" } },
-    "large":  { "meat": { "value": 180, "unit": "g" }, "vegetable": { "value": 350, "unit": "g" }, "starch": { "value": 125, "unit": "g" } }
+    "small":  { "meat": { "value": 125, "unit": "g" } },
+    "medium": { "meat": { "value": 150, "unit": "g" } },
+    "large":  { "meat": { "value": 180, "unit": "g" } }
   },
   "recipes": [
     {
       "id": "generic-meal",
       "slug": "generic-meal",
-      "displayName": "Kød & grøntsager",
+      "displayName": "Kød på tilbud",
       "quantityBasis": "perMeal",
       "servingsPerBatch": 1,
       "slots": [
@@ -105,22 +69,7 @@
             { "ingredientFamilyId": "minced-veal-pork" },
             { "ingredientFamilyId": "chicken-fillet" }
           ]
-        },
-        {
-          "slotKey": "vegetable",
-          "role": "vegetable",
-          "quantity": { "value": 300, "unit": "g" },
-          "allowedFamilies": [
-            { "ingredientFamilyId": "broccoli" },
-            { "ingredientFamilyId": "cauliflower" },
-            { "ingredientFamilyId": "white-cabbage" },
-            { "ingredientFamilyId": "red-cabbage" }
-          ]
         }
-      ],
-      "pantryItems": [
-        { "displayName": "Sauce (fløde-, tomat- eller asiatisk)" },
-        { "displayName": "Ris eller pasta" }
       ]
     }
   ]

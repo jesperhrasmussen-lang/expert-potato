@@ -26,12 +26,7 @@ const PORTION_MULTIPLIERS: Record<PortionSize, { meat: number; vegetable: number
   medium: { meat: 1,         vegetable: 1 },
   large:  { meat: 180 / 150, vegetable: 350 / 300 },
 };
-const PIECE_GRAMS_ASSUMPTIONS: Record<string, number> = {
-  broccoli: 500,
-  cauliflower: 650,
-  'white-cabbage': 1000,
-  'red-cabbage': 1000,
-};
+const PIECE_GRAMS_ASSUMPTIONS: Record<string, number> = {};
 
 interface RawPlace {
   name?: string;
@@ -422,10 +417,6 @@ const DEFAULT_PACKAGE_GRAMS: Record<string, number> = {
   'minced-pork': 400,
   'minced-veal-pork': 400,
   'chicken-fillet': 400,
-  'broccoli': 500,
-  'cauliflower': 650,
-  'white-cabbage': 1000,
-  'red-cabbage': 1000,
 };
 
 function tryParseGramsFromText(text: string): number | null {

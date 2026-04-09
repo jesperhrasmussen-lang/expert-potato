@@ -108,5 +108,5 @@ export function MealResultsPageClient({ initialRequest }: { initialRequest: Meal
     return null;
   }
 
-  return <MealResultsView data={data} />;
+  return <MealResultsView data={data} organicOnly={initialRequest.organicOnly} />;
 }
