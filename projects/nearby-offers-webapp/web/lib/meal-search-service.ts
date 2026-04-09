@@ -124,7 +124,7 @@ async function fetchFromVpsApi(request: MealSearchRequest): Promise<RawPayload> 
       portionSize: request.portionSize,
       organicOnly: request.organicOnly,
     }),
-    signal: AbortSignal.timeout(15000),
+    signal: AbortSignal.timeout(30000),
   });
 
   if (!response.ok) {

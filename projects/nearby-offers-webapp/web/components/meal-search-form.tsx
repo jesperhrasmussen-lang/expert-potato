@@ -186,6 +186,12 @@ export function MealSearchForm() {
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const { latitude, longitude } = position.coords;
+        // Check if location is roughly in Denmark (lat 54.5-57.8, lon 8-15.2)
+        if (latitude < 54.5 || latitude > 57.8 || longitude < 8 || longitude > 15.2) {
+          setLocationError('Din placering er uden for Danmark. Indtast en dansk adresse.');
+          setLocating(false);
+          return;
+        }
         setAddress(`${latitude.toFixed(5)}, ${longitude.toFixed(5)}`);
         setLocating(false);
       },
