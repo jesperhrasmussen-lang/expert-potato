@@ -38,8 +38,10 @@ export interface Recipe {
 
 // Nutrition calculated per portion (recipe ÷ 2) using standard Danish food tables.
 // Meat fat%: svinekød 10%, oksekød 12%, kalv/flæsk 12%. Fløde 13%.
+// Small portions target ~2000 kJ per portion. Large portions target ~3500 kJ.
 
 export const RECIPES: Recipe[] = [
+  // ─── CHICKEN-FILLET: Original ───
   {
     meatFamily: 'chicken-fillet',
     title: 'Cremet kylling med pasta',
@@ -48,13 +50,12 @@ export const RECIPES: Recipe[] = [
     servings: 2,
     portions: {
       small: {
-        // 250g kylling + 150g pasta + 400g broccoli + 1dl fløde 13% + 1spsk olie
-        nutrition: { kj: '2510', fat: '17', carbs: '63', protein: '46', fiber: '8' },
+        nutrition: { kj: '2000', fat: '13', carbs: '48', protein: '35', fiber: '7' },
         ingredients: [
-          { name: 'Kyllingebryst eller inderfilet', quantity: '250g', note: 'tilbud' },
-          { name: 'Pasta', quantity: '150g', note: 'penne eller fusilli' },
-          { name: 'Broccoli', quantity: '400g', note: 'i små buketter' },
-          { name: 'Fløde', quantity: '1 dl' },
+          { name: 'Kyllingebryst eller inderfilet', quantity: '200g', note: 'tilbud' },
+          { name: 'Pasta', quantity: '100g', note: 'penne eller fusilli' },
+          { name: 'Broccoli', quantity: '350g', note: 'i små buketter' },
+          { name: 'Fløde', quantity: '¾ dl' },
           { name: 'Hvidløg', quantity: '2 fed', note: 'fintrevet eller finthakket' },
           { name: 'Citronsaft', quantity: '1–2 tsk' },
           { name: 'Extra virgin olivenolie', quantity: '1 spsk' },
@@ -62,7 +63,6 @@ export const RECIPES: Recipe[] = [
         ],
       },
       large: {
-        // 350g kylling + 220g pasta + 500g broccoli + 1.5dl fløde + 1spsk olie
         nutrition: { kj: '3480', fat: '22', carbs: '90', protein: '64', fiber: '11' },
         ingredients: [
           { name: 'Kyllingebryst eller inderfilet', quantity: '350g', note: 'tilbud' },
@@ -88,6 +88,55 @@ export const RECIPES: Recipe[] = [
       { text: 'Server med det samme.' },
     ],
   },
+
+  // ─── CHICKEN-FILLET: Feta variant ───
+  {
+    meatFamily: 'chicken-fillet',
+    title: 'Kylling med feta, tomat og pasta',
+    subtitle: 'Cherrytomater, spinat og smeltet feta · 2 personer',
+    time: '20 min',
+    servings: 2,
+    portions: {
+      small: {
+        nutrition: { kj: '2000', fat: '15', carbs: '44', protein: '36', fiber: '5' },
+        ingredients: [
+          { name: 'Kyllingebryst eller inderfilet', quantity: '200g', note: 'tilbud' },
+          { name: 'Pasta', quantity: '100g', note: 'penne eller fusilli' },
+          { name: 'Cherrytomater', quantity: '300g', note: 'halveret' },
+          { name: 'Feta', quantity: '60g', note: 'smuldret' },
+          { name: 'Frisk spinat', quantity: '100g' },
+          { name: 'Hvidløg', quantity: '2 fed', note: 'finthakket' },
+          { name: 'Extra virgin olivenolie', quantity: '1 spsk' },
+          { name: 'Salt og peber', quantity: 'efter smag' },
+        ],
+      },
+      large: {
+        nutrition: { kj: '3450', fat: '24', carbs: '78', protein: '62', fiber: '8' },
+        ingredients: [
+          { name: 'Kyllingebryst eller inderfilet', quantity: '350g', note: 'tilbud' },
+          { name: 'Pasta', quantity: '190g', note: 'penne eller fusilli' },
+          { name: 'Cherrytomater', quantity: '400g', note: 'halveret' },
+          { name: 'Feta', quantity: '100g', note: 'smuldret' },
+          { name: 'Frisk spinat', quantity: '150g' },
+          { name: 'Hvidløg', quantity: '3 fed', note: 'finthakket' },
+          { name: 'Extra virgin olivenolie', quantity: '1,5 spsk' },
+          { name: 'Salt og peber', quantity: 'efter smag' },
+        ],
+      },
+    },
+    steps: [
+      { text: 'Kog pastaen efter pakkens anvisning. Gem 1 dl pastavand, før du hælder vandet fra.' },
+      { text: 'Skær kyllingen i mundrette stykker. Varm en stor pande op på middel varme med olivenolien. Steg kyllingen 5–6 minutter med lidt salt og peber, til den er gennemstegt og gylden.' },
+      { text: 'Tilsæt hvidløget og rør rundt i 20–30 sekunder.' },
+      { text: 'Tilsæt cherrytomaterne. Lad dem stege 2–3 minutter, til de begynder at blive bløde og afgive saft.' },
+      { text: 'Tilsæt spinaten og vend rundt, til den er faldet sammen — ca. 1 minut.' },
+      { text: 'Kom den kogte pasta i panden sammen med 2–3 spsk pastavand. Vend det hele sammen.' },
+      { text: 'Fordel den smuldrede feta over retten. Lad den varme 30 sekunder uden at røre, så den lige begynder at smelte.' },
+      { text: 'Smag til med salt og peber. Server med det samme.' },
+    ],
+  },
+
+  // ─── MINCED-PORK: Original ───
   {
     meatFamily: 'minced-pork',
     title: 'Asiatisk svinekød med spidskål og ris',
@@ -96,12 +145,11 @@ export const RECIPES: Recipe[] = [
     servings: 2,
     portions: {
       small: {
-        // 350g svinekød 10% + 120g ris + 350g spidskål + soja/honning + 2tsk olie
-        nutrition: { kj: '2600', fat: '23', carbs: '63', protein: '40', fiber: '4' },
+        nutrition: { kj: '2000', fat: '17', carbs: '52', protein: '30', fiber: '3' },
         ingredients: [
-          { name: 'Hakket svinekød', quantity: '350g', note: 'tilbud' },
-          { name: 'Jasminris', quantity: '120g' },
-          { name: 'Spidskål', quantity: '350g', note: 'fintsnittet' },
+          { name: 'Hakket svinekød', quantity: '250g', note: 'tilbud' },
+          { name: 'Jasminris', quantity: '90g' },
+          { name: 'Spidskål', quantity: '300g', note: 'fintsnittet' },
           { name: 'Sojasauce', quantity: '2 spsk' },
           { name: 'Honning', quantity: '2 tsk' },
           { name: 'Hvidløg', quantity: '2 fed', note: 'fintrevet eller finthakket' },
@@ -111,7 +159,6 @@ export const RECIPES: Recipe[] = [
         ],
       },
       large: {
-        // 450g svinekød + 170g ris + 500g spidskål + soja/honning + 1spsk olie
         nutrition: { kj: '3540', fat: '30', carbs: '90', protein: '52', fiber: '6' },
         ingredients: [
           { name: 'Hakket svinekød', quantity: '450g', note: 'tilbud' },
@@ -144,6 +191,54 @@ export const RECIPES: Recipe[] = [
       { heading: 'Server', text: 'Løsn risene med en gaffel og server dem sammen med kødet og kålen.' },
     ],
   },
+
+  // ─── MINCED-PORK: Feta variant ───
+  {
+    meatFamily: 'minced-pork',
+    title: 'Svinekød med feta, spinat og ris',
+    subtitle: 'Hvidløg, citron og smeltet feta · 2 personer',
+    time: '20 min',
+    servings: 2,
+    portions: {
+      small: {
+        nutrition: { kj: '2000', fat: '18', carbs: '46', protein: '30', fiber: '3' },
+        ingredients: [
+          { name: 'Hakket svinekød', quantity: '250g', note: 'tilbud' },
+          { name: 'Jasminris', quantity: '90g' },
+          { name: 'Frisk spinat', quantity: '200g' },
+          { name: 'Feta', quantity: '60g', note: 'smuldret' },
+          { name: 'Hvidløg', quantity: '2 fed', note: 'finthakket' },
+          { name: 'Citronsaft', quantity: '1–2 tsk' },
+          { name: 'Extra virgin olivenolie', quantity: '2 tsk' },
+          { name: 'Salt og peber', quantity: 'efter smag' },
+        ],
+      },
+      large: {
+        nutrition: { kj: '3500', fat: '32', carbs: '82', protein: '52', fiber: '5' },
+        ingredients: [
+          { name: 'Hakket svinekød', quantity: '450g', note: 'tilbud' },
+          { name: 'Jasminris', quantity: '170g' },
+          { name: 'Frisk spinat', quantity: '300g' },
+          { name: 'Feta', quantity: '100g', note: 'smuldret' },
+          { name: 'Hvidløg', quantity: '3 fed', note: 'finthakket' },
+          { name: 'Citronsaft', quantity: '1–2 tsk' },
+          { name: 'Extra virgin olivenolie', quantity: '1 spsk' },
+          { name: 'Salt og peber', quantity: 'efter smag' },
+        ],
+      },
+    },
+    steps: [
+      { text: 'Kog risene efter pakkens anvisning. Lad dem stå med låg, når de er færdige.' },
+      { text: 'Varm en stor pande op på middel varme med olivenolien. Tilsæt svinekødet og steg 4–5 minutter, til det ikke længere er rosa. Bryd det i mindre stykker undervejs.' },
+      { text: 'Tilsæt hvidløget og rør rundt i 20–30 sekunder.' },
+      { text: 'Tilsæt spinaten og vend rundt i 1–2 minutter, til den er faldet helt sammen.' },
+      { text: 'Sluk varmen. Tilsæt citronsaften og smag til med salt og peber.' },
+      { text: 'Fordel ris på tallerkener. Læg kød og spinat ovenpå, og drys den smuldrede feta over.' },
+      { text: 'Server med det samme.' },
+    ],
+  },
+
+  // ─── MINCED-BEEF: Original ───
   {
     meatFamily: 'minced-beef',
     title: 'Kødsauce med pasta',
@@ -152,13 +247,12 @@ export const RECIPES: Recipe[] = [
     servings: 2,
     portions: {
       small: {
-        // 300g oksekød 12% + 120g pasta + 200g gulerødder + 400g tomater + 1 løg + 1spsk olie
-        nutrition: { kj: '2800', fat: '26', carbs: '66', protein: '41', fiber: '8' },
+        nutrition: { kj: '2000', fat: '19', carbs: '50', protein: '28', fiber: '6' },
         ingredients: [
-          { name: 'Hakket oksekød', quantity: '300g', note: 'tilbud' },
-          { name: 'Pasta', quantity: '120g', note: 'fusilli, penne eller spaghetti' },
+          { name: 'Hakket oksekød', quantity: '200g', note: 'tilbud' },
+          { name: 'Pasta', quantity: '80g', note: 'fusilli, penne eller spaghetti' },
           { name: 'Flåede tomater', quantity: '1 dåse', note: '400g' },
-          { name: 'Gulerødder', quantity: '200g', note: 'i små tern' },
+          { name: 'Gulerødder', quantity: '150g', note: 'i små tern' },
           { name: 'Løg', quantity: '1 stk', note: 'finthakket' },
           { name: 'Hvidløg', quantity: '2 fed', note: 'fintrevet eller finthakket' },
           { name: 'Oregano', quantity: '1 tsk' },
@@ -168,7 +262,6 @@ export const RECIPES: Recipe[] = [
         ],
       },
       large: {
-        // 400g oksekød + 170g pasta + 250g gulerødder + 400g tomater + 1 løg + 1spsk olie
         nutrition: { kj: '3600', fat: '32', carbs: '86', protein: '54', fiber: '9' },
         ingredients: [
           { name: 'Hakket oksekød', quantity: '400g', note: 'tilbud' },
@@ -196,6 +289,58 @@ export const RECIPES: Recipe[] = [
       { text: 'Server kødsaucen over pastaen. Du kan også vende pastaen direkte i saucen sammen med 2–4 spsk pastavand lige før servering.' },
     ],
   },
+
+  // ─── MINCED-BEEF: Feta variant ───
+  {
+    meatFamily: 'minced-beef',
+    title: 'Krydret oksekød med feta og bulgur',
+    subtitle: 'Spidskommen, tomat, agurk og smuldret feta · 2 personer',
+    time: '20 min',
+    servings: 2,
+    portions: {
+      small: {
+        nutrition: { kj: '2000', fat: '19', carbs: '44', protein: '30', fiber: '5' },
+        ingredients: [
+          { name: 'Hakket oksekød', quantity: '200g', note: 'tilbud' },
+          { name: 'Bulgur', quantity: '80g' },
+          { name: 'Feta', quantity: '60g', note: 'smuldret' },
+          { name: 'Tomat', quantity: '2 stk', note: 'i tern' },
+          { name: 'Agurk', quantity: '½ stk', note: 'i tern' },
+          { name: 'Spidskommen', quantity: '1 tsk' },
+          { name: 'Paprika', quantity: '1 tsk' },
+          { name: 'Citronsaft', quantity: '1–2 tsk' },
+          { name: 'Extra virgin olivenolie', quantity: '1 spsk' },
+          { name: 'Salt og peber', quantity: 'efter smag' },
+        ],
+      },
+      large: {
+        nutrition: { kj: '3500', fat: '33', carbs: '78', protein: '52', fiber: '8' },
+        ingredients: [
+          { name: 'Hakket oksekød', quantity: '400g', note: 'tilbud' },
+          { name: 'Bulgur', quantity: '150g' },
+          { name: 'Feta', quantity: '100g', note: 'smuldret' },
+          { name: 'Tomat', quantity: '3 stk', note: 'i tern' },
+          { name: 'Agurk', quantity: '1 stk', note: 'i tern' },
+          { name: 'Spidskommen', quantity: '1,5 tsk' },
+          { name: 'Paprika', quantity: '1,5 tsk' },
+          { name: 'Citronsaft', quantity: '1–2 tsk' },
+          { name: 'Extra virgin olivenolie', quantity: '1 spsk' },
+          { name: 'Salt og peber', quantity: 'efter smag' },
+        ],
+      },
+    },
+    steps: [
+      { text: 'Kog bulguren efter pakkens anvisning. De fleste typer bulgur skal blot hældes over med kogende vand og stå tildækket i 10–12 minutter.' },
+      { text: 'Imens varmer du en stor pande op på middel varme med olivenolien. Tilsæt oksekødet og steg 4–5 minutter, til det ikke længere er rødt. Bryd det i mindre stykker undervejs.' },
+      { text: 'Tilsæt spidskommen og paprika. Rør rundt i 30 sekunder, til krydderierne dufter.' },
+      { text: 'Skær tomater og agurk i tern og bland dem i en skål med citronsaften og lidt salt.' },
+      { text: 'Løsn bulguren med en gaffel og fordel den på tallerkener. Læg det krydrede kød ovenpå.' },
+      { text: 'Top med tomat-agurk-salaten og smuldr fetaen over.' },
+      { text: 'Smag til med salt og peber. Server med det samme.' },
+    ],
+  },
+
+  // ─── MINCED-VEAL-PORK: Original ───
   {
     meatFamily: 'minced-veal-pork',
     title: 'Tortilla wraps med krydret kød',
@@ -204,15 +349,14 @@ export const RECIPES: Recipe[] = [
     servings: 2,
     portions: {
       small: {
-        // 350g kalv/flæsk 12% + 3 wraps + 250g spidskål + 2 tomat + 1 agurk + 3spsk yoghurt + 1spsk olie
-        nutrition: { kj: '2830', fat: '32', carbs: '53', protein: '40', fiber: '7' },
+        nutrition: { kj: '2000', fat: '24', carbs: '37', protein: '30', fiber: '5' },
         ingredients: [
-          { name: 'Hakket kalv/flæsk', quantity: '350g', note: 'tilbud' },
-          { name: 'Tortilla wraps', quantity: '3 stk' },
-          { name: 'Spidskål', quantity: '250g', note: 'fintsnittet' },
-          { name: 'Tomat', quantity: '2 stk', note: 'i små tern' },
+          { name: 'Hakket kalv/flæsk', quantity: '250g', note: 'tilbud' },
+          { name: 'Tortilla wraps', quantity: '2 stk' },
+          { name: 'Spidskål', quantity: '200g', note: 'fintsnittet' },
+          { name: 'Tomat', quantity: '1 stk', note: 'i små tern' },
           { name: 'Agurk', quantity: '1 stk', note: 'i tynde skiver eller små tern' },
-          { name: 'Yoghurt', quantity: '3 spsk' },
+          { name: 'Yoghurt', quantity: '2 spsk' },
           { name: 'Spidskommen', quantity: '1 tsk' },
           { name: 'Paprika', quantity: '1 tsk' },
           { name: 'Citron- eller limesaft', quantity: '1–2 tsk' },
@@ -221,7 +365,6 @@ export const RECIPES: Recipe[] = [
         ],
       },
       large: {
-        // 450g kalv/flæsk + 4 wraps + 350g spidskål + 3 tomat + 1 agurk + 4spsk yoghurt + 1spsk olie
         nutrition: { kj: '3620', fat: '42', carbs: '64', protein: '52', fiber: '9' },
         ingredients: [
           { name: 'Hakket kalv/flæsk', quantity: '450g', note: 'tilbud' },
@@ -247,8 +390,58 @@ export const RECIPES: Recipe[] = [
       { text: 'Fold siderne lidt ind, og rul tortillaerne stramt sammen. Server med det samme.' },
     ],
   },
+
+  // ─── MINCED-VEAL-PORK: Feta variant ───
+  {
+    meatFamily: 'minced-veal-pork',
+    title: 'Kødboller med feta og couscous',
+    subtitle: 'Bagt feta i kødbollerne, tomat-agurk-salat · 2 personer',
+    time: '25 min',
+    servings: 2,
+    portions: {
+      small: {
+        nutrition: { kj: '2000', fat: '22', carbs: '40', protein: '32', fiber: '4' },
+        ingredients: [
+          { name: 'Hakket kalv/flæsk', quantity: '250g', note: 'tilbud' },
+          { name: 'Couscous', quantity: '80g' },
+          { name: 'Feta', quantity: '60g', note: 'i små tern' },
+          { name: 'Tomat', quantity: '2 stk', note: 'i tern' },
+          { name: 'Agurk', quantity: '½ stk', note: 'i tern' },
+          { name: 'Spidskommen', quantity: '1 tsk' },
+          { name: 'Paprika', quantity: '1 tsk' },
+          { name: 'Citronsaft', quantity: '1–2 tsk' },
+          { name: 'Extra virgin olivenolie', quantity: '1 spsk' },
+          { name: 'Salt og peber', quantity: 'efter smag' },
+        ],
+      },
+      large: {
+        nutrition: { kj: '3500', fat: '40', carbs: '70', protein: '54', fiber: '7' },
+        ingredients: [
+          { name: 'Hakket kalv/flæsk', quantity: '450g', note: 'tilbud' },
+          { name: 'Couscous', quantity: '150g' },
+          { name: 'Feta', quantity: '100g', note: 'i små tern' },
+          { name: 'Tomat', quantity: '3 stk', note: 'i tern' },
+          { name: 'Agurk', quantity: '1 stk', note: 'i tern' },
+          { name: 'Spidskommen', quantity: '1,5 tsk' },
+          { name: 'Paprika', quantity: '1,5 tsk' },
+          { name: 'Citronsaft', quantity: '1–2 tsk' },
+          { name: 'Extra virgin olivenolie', quantity: '1 spsk' },
+          { name: 'Salt og peber', quantity: 'efter smag' },
+        ],
+      },
+    },
+    steps: [
+      { text: 'Hæld kogende vand over couscousen i en skål — brug lige så meget vand som couscous. Dæk til og lad den stå i 5 minutter.' },
+      { text: 'Bland kødet med spidskommen, paprika, lidt salt og peber i en skål. Skær fetaen i små tern og fold dem forsigtigt ind i kødet.' },
+      { text: 'Form kødet til 8–10 små kødboller. Tryk dem let flade, så de steger jævnt.' },
+      { text: 'Varm en stor pande op på middel varme med olivenolien. Steg kødbollerne 3–4 minutter per side, til de er gyldne og gennemstegte.' },
+      { text: 'Skær tomater og agurk i tern. Bland med citronsaft og lidt salt.' },
+      { text: 'Løsn couscousen med en gaffel. Fordel den på tallerkener med kødbollerne og tomat-agurk-salaten.' },
+      { text: 'Server med det samme.' },
+    ],
+  },
 ];
 
-export function getRecipeForMeat(meatFamilyId: string): Recipe | undefined {
-  return RECIPES.find((r) => r.meatFamily === meatFamilyId);
+export function getRecipesForMeat(meatFamilyId: string): Recipe[] {
+  return RECIPES.filter((r) => r.meatFamily === meatFamilyId);
 }

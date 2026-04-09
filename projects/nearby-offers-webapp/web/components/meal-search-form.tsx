@@ -297,7 +297,7 @@ export function MealSearchForm() {
               className={`toggle-btn ${portionSize === 'small' ? 'toggle-active' : ''}`}
               onClick={() => setPortionSize('small')}
             >
-              soft girl · 2500 kJ
+              soft girl · 2000 kJ
             </button>
             <button
               type="button"

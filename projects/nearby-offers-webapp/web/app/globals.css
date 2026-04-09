@@ -6,6 +6,7 @@
   --border: #e5e7eb;
   --accent: #e97316;
   --accent-hover: #dc6a10;
+  --mailbox-red: #cc0000;
   --accent-soft: #fff3e6;
   --success-soft: #dcfce7;
   --shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
@@ -74,7 +75,7 @@ button, input {
   font-size: 1.8rem;
   font-weight: 800;
   font-style: italic;
-  color: var(--accent);
+  color: var(--mailbox-red);
 }
 
 .header-logo {
@@ -859,6 +860,35 @@ button, input {
   text-align: center;
   font-size: 0.88rem;
   padding: 10px 16px;
+}
+
+.recipe-chooser {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.recipe-option {
+  display: block;
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #fff;
+  font: inherit;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.12s ease, border-color 0.12s ease, transform 0.12s ease;
+}
+
+.recipe-option:hover {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  transform: translateY(-1px);
 }
 
 .meal-card-est-badge {

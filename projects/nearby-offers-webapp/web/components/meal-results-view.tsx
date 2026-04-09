@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 
 import type { MeatDeal, MealCandidate, MealSearchResponse, PortionSize } from '@/types/meal-optimizer-types';
-import { getRecipeForMeat } from '@/lib/recipes';
+import { getRecipesForMeat } from '@/lib/recipes';
 import type { Recipe } from '@/lib/recipes';
 
 type SizeKey = 'small' | 'large';
@@ -27,8 +27,8 @@ function extractBestDeals(candidates: MealCandidate[]): ExtendedDeal[] {
     );
     if (!meatLine) continue;
 
-    const recipe = getRecipeForMeat(meatLine.ingredientFamilyId);
-    const servings = recipe?.servings || c.servingsPerBatch || 2;
+    const recipes = getRecipesForMeat(meatLine.ingredientFamilyId);
+    const servings = recipes[0]?.servings || c.servingsPerBatch || 2;
     const pricePerMeal = Math.round(meatLine.packagePriceDkk / servings);
 
     const deal: ExtendedDeal = {
@@ -53,19 +53,37 @@ function extractBestDeals(candidates: MealCandidate[]): ExtendedDeal[] {
   return [...bestByMeat.values()].sort((a, b) => a.priceDkk - b.priceDkk);
 }
 
+type CardState = 'collapsed' | 'choosing' | 'viewing';
+
 function DealCard({ deal, rank, organicOnly, sizeKey }: { deal: ExtendedDeal; rank: number; organicOnly?: boolean; sizeKey: SizeKey }) {
-  const [expanded, setExpanded] = useState(false);
-  const recipe = getRecipeForMeat(deal.meatFamilyId);
+  const [state, setState] = useState<CardState>('collapsed');
+  const [selectedIdx, setSelectedIdx] = useState(0);
+  const recipes = getRecipesForMeat(deal.meatFamilyId);
+
+  function onSummaryClick() {
+    setState(state === 'collapsed' ? 'choosing' : 'collapsed');
+  }
+
+  function onRecipeSelect(idx: number, e: React.MouseEvent) {
+    e.stopPropagation();
+    setSelectedIdx(idx);
+    setState('viewing');
+  }
+
+  function onCloseRecipe(e: React.MouseEvent) {
+    e.stopPropagation();
+    setState('choosing');
+  }
 
   return (
-    <article
-      className="meal-card-compact"
-      onClick={() => setExpanded(!expanded)}
-      role="button"
-      tabIndex={0}
-      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setExpanded(!expanded); }}
-    >
-      <div className="meal-card-summary">
+    <article className="meal-card-compact">
+      <div
+        className="meal-card-summary"
+        onClick={onSummaryClick}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onSummaryClick(); }}
+      >
         <span className="meal-card-rank">{rank}</span>
         <div className="meal-card-lines">
           <p className="meal-card-line2">
@@ -77,16 +95,34 @@ function DealCard({ deal, rank, organicOnly, sizeKey }: { deal: ExtendedDeal; ra
         </div>
       </div>
 
-      {expanded && recipe && (
+      {state === 'choosing' && recipes.length > 0 && (
+        <div className="meal-card-detail">
+          <span className="meal-card-pantry-label">Vælg opskrift</span>
+          <div className="recipe-chooser">
+            {recipes.map((r, i) => (
+              <button
+                key={i}
+                type="button"
+                className="recipe-option"
+                onClick={(e) => onRecipeSelect(i, e)}
+              >
+                {r.title}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {state === 'viewing' && recipes[selectedIdx] && (
         <>
           <button
             type="button"
             className="secondary-button recipe-back-btn"
-            onClick={(e) => { e.stopPropagation(); setExpanded(false); }}
+            onClick={onCloseRecipe}
           >
-            Luk opskrift
+            ← Vælg opskrift
           </button>
-          <RecipeDetail recipe={recipe} sizeKey={sizeKey} />
+          <RecipeDetail recipe={recipes[selectedIdx]} sizeKey={sizeKey} />
         </>
       )}
     </article>
