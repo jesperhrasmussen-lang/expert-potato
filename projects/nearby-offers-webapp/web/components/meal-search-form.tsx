@@ -332,7 +332,6 @@ export function MealSearchForm() {
         </div>
 
         <div className="toggle-group">
-          <span className="toggle-label">Økologisk</span>
           <div className="toggle-control">
             <button
               type="button"
@@ -352,6 +351,11 @@ export function MealSearchForm() {
         </div>
       </div>
 
+      {/* Submit */}
+      <button className="primary-button" type="submit" disabled={!canSubmit}>
+        Start søgning &rsaquo;
+      </button>
+
       {/* Save on device */}
       <div className="field-group">
         <label className="checkbox-row">
@@ -363,11 +367,6 @@ export function MealSearchForm() {
           <span>Gem mine valg på denne enhed</span>
         </label>
       </div>
-
-      {/* Submit */}
-      <button className="primary-button" type="submit" disabled={!canSubmit}>
-        Start søgning &rsaquo;
-      </button>
     </form>
   );
 }
