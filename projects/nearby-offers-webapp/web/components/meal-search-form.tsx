@@ -311,6 +311,10 @@ export function MealSearchForm() {
       <div className="toggle-stack">
         <div className="toggle-group">
           <span className="toggle-label">Måltidsstørrelse i opskrifterne</span>
+          <div className="kj-readout">
+            <div className="kj-readout-main">{portionSize} kJ</div>
+            <div className="kj-readout-sub">~{getAverageMeatGramsAtKj(Number(portionSize) as Kj)}g kød pr. portion</div>
+          </div>
           <input
             type="range"
             min={2000}
@@ -321,10 +325,6 @@ export function MealSearchForm() {
             className="kj-slider"
             aria-label="Måltidsstørrelse i kJ"
           />
-          <div className="kj-readout">
-            <div className="kj-readout-main">{portionSize} kJ</div>
-            <div className="kj-readout-sub">~{getAverageMeatGramsAtKj(Number(portionSize) as Kj)}g kød pr. portion</div>
-          </div>
         </div>
 
         <div className="toggle-group toggle-group-spaced">
