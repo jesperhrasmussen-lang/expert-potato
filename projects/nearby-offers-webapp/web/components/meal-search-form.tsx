@@ -310,7 +310,7 @@ export function MealSearchForm() {
       {/* Toggles — one per line, centered */}
       <div className="toggle-stack">
         <div className="toggle-group">
-          <span className="toggle-label">Måltidsstørrelse i opskrifterne</span>
+          <span className="toggle-label">Portionsstørrelse i opskrifterne</span>
           <div className="kj-readout">
             <div className="kj-readout-main">{portionSize} kJ</div>
             <div className="kj-readout-sub">~{getAverageMeatGramsAtKj(Number(portionSize) as Kj)}g kød pr. portion</div>
@@ -323,7 +323,7 @@ export function MealSearchForm() {
             value={Number(portionSize)}
             onChange={(e) => setPortionSize(e.target.value as PortionSize)}
             className="kj-slider"
-            aria-label="Måltidsstørrelse i kJ"
+            aria-label="Portionsstørrelse i kJ"
           />
         </div>
 
