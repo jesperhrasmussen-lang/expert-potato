@@ -1,3 +1,11 @@
+// Recipes use a kJ-based scaling model.
+// Each ingredient has a base amount at 2000 kJ per portion.
+// Linear scaling: amount(kj) = baseAmount × (kj / 2000)
+// Recipes serve 2 people. Ingredient amounts are for the whole batch (2 portions).
+
+export type Kj = 2000 | 2500 | 3000 | 3500 | 4000;
+export const KJ_LEVELS: Kj[] = [2000, 2500, 3000, 3500, 4000];
+
 export interface IngredientLine {
   name: string;
   quantity: string;
@@ -22,7 +30,24 @@ export interface PortionVariant {
   ingredients: IngredientLine[];
 }
 
-export type SizeKey = 'small' | 'large' | 'combined';
+// Base ingredient defined at 2000 kJ. Scales linearly with kJ if scales=true.
+export interface BaseIngredient {
+  name: string;
+  amount?: number;
+  unit?: 'g' | 'dl' | 'spsk' | 'tsk' | 'fed' | 'stk' | 'dåse';
+  quantityText?: string; // overrides amount/unit if set (e.g. "efter smag")
+  scales: boolean;
+  isMeat?: boolean;
+  note?: string;
+}
+
+// Base nutrition at 2000 kJ. Scales linearly with kJ.
+export interface BaseNutrition {
+  fat: number;
+  carbs: number;
+  protein: number;
+  fiber: number;
+}
 
 export interface Recipe {
   meatFamily: string;
@@ -30,69 +55,156 @@ export interface Recipe {
   subtitle: string;
   time: string;
   servings: number;
-  portions: {
-    small: PortionVariant;
-    large: PortionVariant;
-    combined: PortionVariant;
-  };
+  baseIngredients: BaseIngredient[];
+  baseNutrition: BaseNutrition;
   preparation?: string[];
   steps: RecipeStep[];
 }
 
-// Nutrition calculated per portion (recipe ÷ 2) using standard Danish food tables.
-// Meat fat%: svinekød 10%, oksekød 12%, kalv/flæsk 12%. Fløde 13%.
-// Small portions target ~2000 kJ per portion. Large portions target ~3500 kJ.
-// Combined = 1 softgirl + 1 gymbro portion. Ingredients are midpoint.
+// ─────────────────────────────────────────────────────────────
+// Helpers
+// ─────────────────────────────────────────────────────────────
+
+function formatGrams(amount: number): string {
+  return `${Math.round(amount / 5) * 5}g`;
+}
+
+function formatDl(amount: number): string {
+  // Round to nearest quarter dl
+  const r = Math.round(amount * 4) / 4;
+  const map: Record<string, string> = {
+    '0.25': '¼ dl', '0.5': '½ dl', '0.75': '¾ dl',
+    '1': '1 dl', '1.25': '1¼ dl', '1.5': '1½ dl', '1.75': '1¾ dl',
+    '2': '2 dl', '2.25': '2¼ dl', '2.5': '2½ dl',
+  };
+  return map[r.toString()] || `${r.toString().replace('.', ',')} dl`;
+}
+
+function formatSpsk(amount: number): string {
+  // Round to half spsk
+  const r = Math.round(amount * 2) / 2;
+  if (r === 0.5) return '½ spsk';
+  if (r === 1) return '1 spsk';
+  if (r === 1.5) return '1½ spsk';
+  if (r === 2) return '2 spsk';
+  if (r === 2.5) return '2½ spsk';
+  if (r === 3) return '3 spsk';
+  if (r === 3.5) return '3½ spsk';
+  if (r === 4) return '4 spsk';
+  if (r === 4.5) return '4½ spsk';
+  if (r === 5) return '5 spsk';
+  return `${r} spsk`;
+}
+
+function formatTsk(amount: number): string {
+  const r = Math.round(amount * 2) / 2;
+  if (r === 0.5) return '½ tsk';
+  if (r === 1) return '1 tsk';
+  if (r === 1.5) return '1½ tsk';
+  if (r === 2) return '2 tsk';
+  if (r === 2.5) return '2½ tsk';
+  if (r === 3) return '3 tsk';
+  return `${r} tsk`;
+}
+
+function formatStk(amount: number): string {
+  const r = Math.round(amount * 2) / 2;
+  if (r === 0.5) return '½ stk';
+  if (r === 1) return '1 stk';
+  if (r === 1.5) return '1½ stk';
+  if (r === 2) return '2 stk';
+  if (r === 2.5) return '2½ stk';
+  if (r === 3) return '3 stk';
+  if (r === 3.5) return '3½ stk';
+  if (r === 4) return '4 stk';
+  if (r === 5) return '5 stk';
+  return `${Math.round(r)} stk`;
+}
+
+function formatFed(amount: number): string {
+  const r = Math.round(amount);
+  return `${r} fed`;
+}
+
+function formatQuantity(amount: number, unit: BaseIngredient['unit']): string {
+  switch (unit) {
+    case 'g': return formatGrams(amount);
+    case 'dl': return formatDl(amount);
+    case 'spsk': return formatSpsk(amount);
+    case 'tsk': return formatTsk(amount);
+    case 'stk': return formatStk(amount);
+    case 'fed': return formatFed(amount);
+    case 'dåse': return `${Math.round(amount)} dåse`;
+    default: return String(amount);
+  }
+}
+
+export function getPortionForKj(recipe: Recipe, kj: Kj): PortionVariant {
+  const factor = kj / 2000;
+  const ingredients: IngredientLine[] = recipe.baseIngredients.map((ing) => {
+    let quantity: string;
+    if (ing.quantityText) {
+      quantity = ing.quantityText;
+    } else if (ing.amount !== undefined && ing.unit) {
+      const scaledAmount = ing.scales ? ing.amount * factor : ing.amount;
+      quantity = formatQuantity(scaledAmount, ing.unit);
+    } else {
+      quantity = '';
+    }
+    return { name: ing.name, quantity, note: ing.note };
+  });
+
+  const n = recipe.baseNutrition;
+  return {
+    nutrition: {
+      kj: String(kj),
+      fat: String(Math.round(n.fat * factor)),
+      carbs: String(Math.round(n.carbs * factor)),
+      protein: String(Math.round(n.protein * factor)),
+      fiber: String(Math.round(n.fiber * factor)),
+    },
+    ingredients,
+  };
+}
+
+// Returns meat grams for the whole recipe batch (2 servings) at given kJ
+export function getMeatGramsAtKj(recipe: Recipe, kj: Kj): number {
+  const meat = recipe.baseIngredients.find((i) => i.isMeat);
+  if (!meat || meat.amount === undefined) return 250;
+  return Math.round(meat.amount * (kj / 2000));
+}
+
+// Average meat grams per portion across all 4 meat families at a given kJ.
+// Base values at 2000 kJ per batch (2 portions):
+//   chicken 200, pork 250, beef 200, veal/pork 250 → avg 225 per batch = 112.5 per portion
+export function getAverageMeatGramsAtKj(kj: Kj): number {
+  const factor = kj / 2000;
+  return Math.round((112.5 * factor) / 5) * 5;
+}
+
+// ─────────────────────────────────────────────────────────────
+// Recipes
+// ─────────────────────────────────────────────────────────────
 
 export const RECIPES: Recipe[] = [
-  // ─── CHICKEN-FILLET: Original ───
+  // ═══ CHICKEN-FILLET ═══
   {
     meatFamily: 'chicken-fillet',
     title: 'Cremet kylling med pasta',
     subtitle: 'Broccoli, hvidløg og flødesauce · 2 personer',
     time: '20 min',
     servings: 2,
-    portions: {
-      small: {
-        nutrition: { kj: '2000', fat: '13', carbs: '48', protein: '35', fiber: '7' },
-        ingredients: [
-          { name: 'Kyllingebryst eller inderfilet', quantity: '200g', note: 'tilbud' },
-          { name: 'Pasta', quantity: '100g', note: 'penne eller fusilli' },
-          { name: 'Broccoli', quantity: '350g', note: 'i små buketter' },
-          { name: 'Fløde', quantity: '¾ dl' },
-          { name: 'Hvidløg', quantity: '2 fed', note: 'fintrevet eller finthakket' },
-          { name: 'Citronsaft', quantity: '1–2 tsk' },
-          { name: 'Extra virgin olivenolie', quantity: '1 spsk' },
-          { name: 'Salt og peber', quantity: 'efter smag' },
-        ],
-      },
-      large: {
-        nutrition: { kj: '3480', fat: '22', carbs: '90', protein: '64', fiber: '11' },
-        ingredients: [
-          { name: 'Kyllingebryst eller inderfilet', quantity: '350g', note: 'tilbud' },
-          { name: 'Pasta', quantity: '220g', note: 'penne eller fusilli' },
-          { name: 'Broccoli', quantity: '500g', note: 'i små buketter' },
-          { name: 'Fløde', quantity: '1,5 dl' },
-          { name: 'Hvidløg', quantity: '3 fed', note: 'fintrevet eller finthakket' },
-          { name: 'Citronsaft', quantity: '1–2 tsk' },
-          { name: 'Extra virgin olivenolie', quantity: '1 spsk' },
-          { name: 'Salt og peber', quantity: 'efter smag' },
-        ],
-      },
-      combined: {
-        nutrition: { kj: '2000 / 3480', fat: '13 / 22', carbs: '48 / 90', protein: '35 / 64', fiber: '7 / 11' },
-        ingredients: [
-          { name: 'Kyllingebryst eller inderfilet', quantity: '275g', note: 'tilbud' },
-          { name: 'Pasta', quantity: '160g', note: 'penne eller fusilli' },
-          { name: 'Broccoli', quantity: '425g', note: 'i små buketter' },
-          { name: 'Fløde', quantity: '1 dl' },
-          { name: 'Hvidløg', quantity: '2–3 fed', note: 'fintrevet eller finthakket' },
-          { name: 'Citronsaft', quantity: '1–2 tsk' },
-          { name: 'Extra virgin olivenolie', quantity: '1 spsk' },
-          { name: 'Salt og peber', quantity: 'efter smag' },
-        ],
-      },
-    },
+    baseNutrition: { fat: 13, carbs: 48, protein: 35, fiber: 7 },
+    baseIngredients: [
+      { name: 'Kyllingebryst eller inderfilet', amount: 200, unit: 'g', scales: true, isMeat: true, note: 'tilbud' },
+      { name: 'Pasta', amount: 100, unit: 'g', scales: true, note: 'penne eller fusilli' },
+      { name: 'Broccoli', amount: 350, unit: 'g', scales: true, note: 'i små buketter' },
+      { name: 'Fløde', amount: 0.75, unit: 'dl', scales: true },
+      { name: 'Hvidløg', amount: 2, unit: 'fed', scales: true, note: 'fintrevet eller finthakket' },
+      { name: 'Citronsaft', quantityText: '1–2 tsk', scales: false },
+      { name: 'Extra virgin olivenolie', amount: 1, unit: 'spsk', scales: false },
+      { name: 'Salt og peber', quantityText: 'efter smag', scales: false },
+    ],
     steps: [
       { text: 'Sæt en gryde vand over, og kog pastaen efter pakkens anvisning. Når der er 2 minutter tilbage af kogetiden, tilsætter du broccoli i samme gryde som pastaen.' },
       { text: 'Gem 1 dl pastavand, før du hælder vandet fra.' },
@@ -102,58 +214,27 @@ export const RECIPES: Recipe[] = [
       { text: 'Tilsæt fløden og 2–4 spsk pastavand. Lad det småsimre 1–2 minutter, til saucen bliver let cremet. Hvis den virker for tyk, tilsæt lidt mere pastavand.' },
       { text: 'Lad kylling og sauce blive på panden. Tilsæt den kogte pasta og broccoli til panden, og vend det hele sammen i 30–60 sekunder.' },
       { text: 'Tag panden ned på lav varme eller sluk. Tilsæt citronsaften, og smag til med mere salt og peber.' },
-      { text: 'Server med det samme. Den ene portion er lidt mindre end den anden.' },
+      { text: 'Server med det samme.' },
     ],
   },
 
-  // ─── CHICKEN-FILLET: Feta variant ───
   {
     meatFamily: 'chicken-fillet',
     title: 'Kylling med feta, tomat og pasta',
     subtitle: 'Cherrytomater, spinat og smeltet feta · 2 personer',
     time: '20 min',
     servings: 2,
-    portions: {
-      small: {
-        nutrition: { kj: '2000', fat: '15', carbs: '44', protein: '36', fiber: '5' },
-        ingredients: [
-          { name: 'Kyllingebryst eller inderfilet', quantity: '200g', note: 'tilbud' },
-          { name: 'Pasta', quantity: '100g', note: 'penne eller fusilli' },
-          { name: 'Cherrytomater', quantity: '300g', note: 'halveret' },
-          { name: 'Feta', quantity: '60g', note: 'smuldret' },
-          { name: 'Frisk spinat', quantity: '100g' },
-          { name: 'Hvidløg', quantity: '2 fed', note: 'finthakket' },
-          { name: 'Extra virgin olivenolie', quantity: '1 spsk' },
-          { name: 'Salt og peber', quantity: 'efter smag' },
-        ],
-      },
-      large: {
-        nutrition: { kj: '3450', fat: '24', carbs: '78', protein: '62', fiber: '8' },
-        ingredients: [
-          { name: 'Kyllingebryst eller inderfilet', quantity: '350g', note: 'tilbud' },
-          { name: 'Pasta', quantity: '190g', note: 'penne eller fusilli' },
-          { name: 'Cherrytomater', quantity: '400g', note: 'halveret' },
-          { name: 'Feta', quantity: '100g', note: 'smuldret' },
-          { name: 'Frisk spinat', quantity: '150g' },
-          { name: 'Hvidløg', quantity: '3 fed', note: 'finthakket' },
-          { name: 'Extra virgin olivenolie', quantity: '1,5 spsk' },
-          { name: 'Salt og peber', quantity: 'efter smag' },
-        ],
-      },
-      combined: {
-        nutrition: { kj: '2000 / 3450', fat: '15 / 24', carbs: '44 / 78', protein: '36 / 62', fiber: '5 / 8' },
-        ingredients: [
-          { name: 'Kyllingebryst eller inderfilet', quantity: '275g', note: 'tilbud' },
-          { name: 'Pasta', quantity: '145g', note: 'penne eller fusilli' },
-          { name: 'Cherrytomater', quantity: '350g', note: 'halveret' },
-          { name: 'Feta', quantity: '80g', note: 'smuldret' },
-          { name: 'Frisk spinat', quantity: '125g' },
-          { name: 'Hvidløg', quantity: '2–3 fed', note: 'finthakket' },
-          { name: 'Extra virgin olivenolie', quantity: '1 spsk' },
-          { name: 'Salt og peber', quantity: 'efter smag' },
-        ],
-      },
-    },
+    baseNutrition: { fat: 15, carbs: 44, protein: 36, fiber: 5 },
+    baseIngredients: [
+      { name: 'Kyllingebryst eller inderfilet', amount: 200, unit: 'g', scales: true, isMeat: true, note: 'tilbud' },
+      { name: 'Pasta', amount: 100, unit: 'g', scales: true, note: 'penne eller fusilli' },
+      { name: 'Cherrytomater', amount: 300, unit: 'g', scales: true, note: 'halveret' },
+      { name: 'Feta', amount: 60, unit: 'g', scales: true, note: 'smuldret' },
+      { name: 'Frisk spinat', amount: 100, unit: 'g', scales: true },
+      { name: 'Hvidløg', amount: 2, unit: 'fed', scales: true, note: 'finthakket' },
+      { name: 'Extra virgin olivenolie', amount: 1, unit: 'spsk', scales: false },
+      { name: 'Salt og peber', quantityText: 'efter smag', scales: false },
+    ],
     steps: [
       { text: 'Kog pastaen efter pakkens anvisning. Gem 1 dl pastavand, før du hælder vandet fra.' },
       { text: 'Skær kyllingen i mundrette stykker. Varm en stor pande op på middel varme med olivenolien. Steg kyllingen 5–6 minutter med lidt salt og peber, til den er gennemstegt og gylden.' },
@@ -166,57 +247,25 @@ export const RECIPES: Recipe[] = [
     ],
   },
 
-  // ─── MINCED-PORK: Original ───
+  // ═══ MINCED-PORK ═══
   {
     meatFamily: 'minced-pork',
     title: 'Asiatisk svinekød med spidskål og ris',
     subtitle: 'Soja, honning og ingefær · 2 personer',
     time: '20 min',
     servings: 2,
-    portions: {
-      small: {
-        nutrition: { kj: '2000', fat: '17', carbs: '52', protein: '30', fiber: '3' },
-        ingredients: [
-          { name: 'Hakket svinekød', quantity: '250g', note: 'tilbud' },
-          { name: 'Jasminris', quantity: '90g' },
-          { name: 'Spidskål', quantity: '300g', note: 'fintsnittet' },
-          { name: 'Sojasauce', quantity: '2 spsk' },
-          { name: 'Honning', quantity: '2 tsk' },
-          { name: 'Hvidløg', quantity: '2 fed', note: 'fintrevet eller finthakket' },
-          { name: 'Friskrevet ingefær', quantity: '2 tsk' },
-          { name: 'Riseddike eller saft af ½ lime', quantity: '1–2 tsk' },
-          { name: 'Extra virgin olivenolie', quantity: '2 tsk' },
-        ],
-      },
-      large: {
-        nutrition: { kj: '3540', fat: '30', carbs: '90', protein: '52', fiber: '6' },
-        ingredients: [
-          { name: 'Hakket svinekød', quantity: '450g', note: 'tilbud' },
-          { name: 'Jasminris', quantity: '170g' },
-          { name: 'Spidskål', quantity: '500g', note: 'fintsnittet' },
-          { name: 'Sojasauce', quantity: '3 spsk' },
-          { name: 'Honning', quantity: '1 spsk' },
-          { name: 'Hvidløg', quantity: '3 fed', note: 'fintrevet eller finthakket' },
-          { name: 'Friskrevet ingefær', quantity: '1 spsk' },
-          { name: 'Riseddike eller saft af ½ lime', quantity: '1–2 tsk' },
-          { name: 'Extra virgin olivenolie', quantity: '1 spsk' },
-        ],
-      },
-      combined: {
-        nutrition: { kj: '2000 / 3540', fat: '17 / 30', carbs: '52 / 90', protein: '30 / 52', fiber: '3 / 6' },
-        ingredients: [
-          { name: 'Hakket svinekød', quantity: '350g', note: 'tilbud' },
-          { name: 'Jasminris', quantity: '130g' },
-          { name: 'Spidskål', quantity: '400g', note: 'fintsnittet' },
-          { name: 'Sojasauce', quantity: '2–3 spsk' },
-          { name: 'Honning', quantity: '1 spsk' },
-          { name: 'Hvidløg', quantity: '2–3 fed', note: 'fintrevet eller finthakket' },
-          { name: 'Friskrevet ingefær', quantity: '1 spsk' },
-          { name: 'Riseddike eller saft af ½ lime', quantity: '1–2 tsk' },
-          { name: 'Extra virgin olivenolie', quantity: '1 spsk' },
-        ],
-      },
-    },
+    baseNutrition: { fat: 17, carbs: 52, protein: 30, fiber: 3 },
+    baseIngredients: [
+      { name: 'Hakket svinekød', amount: 250, unit: 'g', scales: true, isMeat: true, note: 'tilbud' },
+      { name: 'Jasminris', amount: 90, unit: 'g', scales: true },
+      { name: 'Spidskål', amount: 300, unit: 'g', scales: true, note: 'fintsnittet' },
+      { name: 'Sojasauce', amount: 2, unit: 'spsk', scales: true },
+      { name: 'Honning', amount: 2, unit: 'tsk', scales: true },
+      { name: 'Hvidløg', amount: 2, unit: 'fed', scales: true, note: 'fintrevet eller finthakket' },
+      { name: 'Friskrevet ingefær', amount: 2, unit: 'tsk', scales: true },
+      { name: 'Riseddike eller saft af ½ lime', quantityText: '1–2 tsk', scales: false },
+      { name: 'Extra virgin olivenolie', amount: 2, unit: 'tsk', scales: false },
+    ],
     preparation: [
       'Snit spidskålen fint.',
       'Riv eller hak hvidløg og ingefær fint.',
@@ -236,54 +285,23 @@ export const RECIPES: Recipe[] = [
     ],
   },
 
-  // ─── MINCED-PORK: Feta variant ───
   {
     meatFamily: 'minced-pork',
     title: 'Svinekød med feta, spinat og ris',
     subtitle: 'Hvidløg, citron og smuldret feta · 2 personer',
     time: '20 min',
     servings: 2,
-    portions: {
-      small: {
-        nutrition: { kj: '2000', fat: '18', carbs: '46', protein: '30', fiber: '3' },
-        ingredients: [
-          { name: 'Hakket svinekød', quantity: '250g' },
-          { name: 'Jasminris', quantity: '90g' },
-          { name: 'Frisk spinat', quantity: '200g' },
-          { name: 'Feta', quantity: '60g', note: 'smuldret' },
-          { name: 'Hvidløg', quantity: '2 fed', note: 'fintrevet eller finthakket' },
-          { name: 'Citronsaft', quantity: '1–2 tsk' },
-          { name: 'Extra virgin olivenolie', quantity: '2 tsk' },
-          { name: 'Salt og peber', quantity: 'efter smag' },
-        ],
-      },
-      large: {
-        nutrition: { kj: '3500', fat: '32', carbs: '82', protein: '52', fiber: '5' },
-        ingredients: [
-          { name: 'Hakket svinekød', quantity: '450g' },
-          { name: 'Jasminris', quantity: '170g' },
-          { name: 'Frisk spinat', quantity: '300g' },
-          { name: 'Feta', quantity: '100g', note: 'smuldret' },
-          { name: 'Hvidløg', quantity: '3 fed', note: 'fintrevet eller finthakket' },
-          { name: 'Citronsaft', quantity: '1–2 tsk' },
-          { name: 'Extra virgin olivenolie', quantity: '1 spsk' },
-          { name: 'Salt og peber', quantity: 'efter smag' },
-        ],
-      },
-      combined: {
-        nutrition: { kj: '2000 / 3500', fat: '18 / 32', carbs: '46 / 82', protein: '30 / 52', fiber: '3 / 5' },
-        ingredients: [
-          { name: 'Hakket svinekød', quantity: '350g' },
-          { name: 'Jasminris', quantity: '130g' },
-          { name: 'Frisk spinat', quantity: '250g' },
-          { name: 'Feta', quantity: '80g', note: 'smuldret' },
-          { name: 'Hvidløg', quantity: '2–3 fed', note: 'fintrevet eller finthakket' },
-          { name: 'Citronsaft', quantity: '1–2 tsk' },
-          { name: 'Extra virgin olivenolie', quantity: '1 spsk' },
-          { name: 'Salt og peber', quantity: 'efter smag' },
-        ],
-      },
-    },
+    baseNutrition: { fat: 18, carbs: 46, protein: 30, fiber: 3 },
+    baseIngredients: [
+      { name: 'Hakket svinekød', amount: 250, unit: 'g', scales: true, isMeat: true },
+      { name: 'Jasminris', amount: 90, unit: 'g', scales: true },
+      { name: 'Frisk spinat', amount: 200, unit: 'g', scales: true },
+      { name: 'Feta', amount: 60, unit: 'g', scales: true, note: 'smuldret' },
+      { name: 'Hvidløg', amount: 2, unit: 'fed', scales: true, note: 'fintrevet eller finthakket' },
+      { name: 'Citronsaft', quantityText: '1–2 tsk', scales: false },
+      { name: 'Extra virgin olivenolie', amount: 2, unit: 'tsk', scales: false },
+      { name: 'Salt og peber', quantityText: 'efter smag', scales: false },
+    ],
     steps: [
       { text: 'Kog risene efter pakkens anvisning. Når de er færdige, lader du dem stå med låg i 5 minutter, så de sætter sig lidt. Løsn dem derefter med en gaffel.' },
       { text: 'Imens varmer du en stor pande op på middel varme. Tilsæt olivenolien. Når olien ser blank ud, tilsætter du svinekødet. Lad det stege ca. 1 minut uden at røre for meget. Bryd det derefter i mindre stykker og steg videre 3–4 minutter, til det ikke længere er rosa og har fået lidt brun farve nogle steder.' },
@@ -295,60 +313,26 @@ export const RECIPES: Recipe[] = [
     ],
   },
 
-  // ─── MINCED-BEEF: Original ───
+  // ═══ MINCED-BEEF ═══
   {
     meatFamily: 'minced-beef',
     title: 'Kødsauce med pasta',
     subtitle: 'Løg, gulerødder og tomater · 2 personer',
     time: '25 min',
     servings: 2,
-    portions: {
-      small: {
-        nutrition: { kj: '2000', fat: '19', carbs: '50', protein: '28', fiber: '6' },
-        ingredients: [
-          { name: 'Hakket oksekød', quantity: '200g', note: 'tilbud' },
-          { name: 'Pasta', quantity: '80g', note: 'fusilli, penne eller spaghetti' },
-          { name: 'Flåede tomater', quantity: '1 dåse', note: '400g' },
-          { name: 'Gulerødder', quantity: '150g', note: 'i små tern' },
-          { name: 'Løg', quantity: '1 stk', note: 'finthakket' },
-          { name: 'Hvidløg', quantity: '2 fed', note: 'fintrevet eller finthakket' },
-          { name: 'Oregano', quantity: '1 tsk' },
-          { name: 'Koncentreret tomatpuré', quantity: '1 spsk', note: 'valgfrit' },
-          { name: 'Extra virgin olivenolie', quantity: '1 spsk' },
-          { name: 'Salt og peber', quantity: 'efter smag' },
-        ],
-      },
-      large: {
-        nutrition: { kj: '3600', fat: '32', carbs: '86', protein: '54', fiber: '9' },
-        ingredients: [
-          { name: 'Hakket oksekød', quantity: '400g', note: 'tilbud' },
-          { name: 'Pasta', quantity: '170g', note: 'fusilli, penne eller spaghetti' },
-          { name: 'Flåede tomater', quantity: '1 dåse', note: '400g' },
-          { name: 'Gulerødder', quantity: '250g', note: 'i små tern' },
-          { name: 'Løg', quantity: '1 stk', note: 'finthakket' },
-          { name: 'Hvidløg', quantity: '3 fed', note: 'fintrevet eller finthakket' },
-          { name: 'Oregano', quantity: '1 tsk' },
-          { name: 'Koncentreret tomatpuré', quantity: '1 spsk', note: 'valgfrit' },
-          { name: 'Extra virgin olivenolie', quantity: '1 spsk' },
-          { name: 'Salt og peber', quantity: 'efter smag' },
-        ],
-      },
-      combined: {
-        nutrition: { kj: '2000 / 3600', fat: '19 / 32', carbs: '50 / 86', protein: '28 / 54', fiber: '6 / 9' },
-        ingredients: [
-          { name: 'Hakket oksekød', quantity: '300g', note: 'tilbud' },
-          { name: 'Pasta', quantity: '125g', note: 'fusilli, penne eller spaghetti' },
-          { name: 'Flåede tomater', quantity: '1 dåse', note: '400g' },
-          { name: 'Gulerødder', quantity: '200g', note: 'i små tern' },
-          { name: 'Løg', quantity: '1 stk', note: 'finthakket' },
-          { name: 'Hvidløg', quantity: '2–3 fed', note: 'fintrevet eller finthakket' },
-          { name: 'Oregano', quantity: '1 tsk' },
-          { name: 'Koncentreret tomatpuré', quantity: '1 spsk', note: 'valgfrit' },
-          { name: 'Extra virgin olivenolie', quantity: '1 spsk' },
-          { name: 'Salt og peber', quantity: 'efter smag' },
-        ],
-      },
-    },
+    baseNutrition: { fat: 19, carbs: 50, protein: 28, fiber: 6 },
+    baseIngredients: [
+      { name: 'Hakket oksekød', amount: 200, unit: 'g', scales: true, isMeat: true, note: 'tilbud' },
+      { name: 'Pasta', amount: 80, unit: 'g', scales: true, note: 'fusilli, penne eller spaghetti' },
+      { name: 'Flåede tomater', amount: 1, unit: 'dåse', scales: false, note: '400g' },
+      { name: 'Gulerødder', amount: 150, unit: 'g', scales: true, note: 'i små tern' },
+      { name: 'Løg', amount: 1, unit: 'stk', scales: false, note: 'finthakket' },
+      { name: 'Hvidløg', amount: 2, unit: 'fed', scales: true, note: 'fintrevet eller finthakket' },
+      { name: 'Oregano', amount: 1, unit: 'tsk', scales: false },
+      { name: 'Koncentreret tomatpuré', amount: 1, unit: 'spsk', scales: false, note: 'valgfrit' },
+      { name: 'Extra virgin olivenolie', amount: 1, unit: 'spsk', scales: false },
+      { name: 'Salt og peber', quantityText: 'efter smag', scales: false },
+    ],
     steps: [
       { text: 'Sæt en gryde vand over, og kog pastaen efter pakkens anvisning. Gem 1 dl pastavand, før du hælder vandet fra.' },
       { text: 'Imens varmer du en stor pande eller gryde op på middel varme. Tilsæt olivenolien, løg og gulerødder. Steg 5–7 minutter, til løgene er bløde og gulerødderne er begyndt at blive møre. Rør jævnligt.' },
@@ -362,60 +346,25 @@ export const RECIPES: Recipe[] = [
     ],
   },
 
-  // ─── MINCED-BEEF: Feta variant ───
   {
     meatFamily: 'minced-beef',
     title: 'Krydret oksekød med feta og bulgur',
     subtitle: 'Spidskommen, tomat, agurk og smuldret feta · 2 personer',
     time: '20 min',
     servings: 2,
-    portions: {
-      small: {
-        nutrition: { kj: '2000', fat: '19', carbs: '44', protein: '30', fiber: '5' },
-        ingredients: [
-          { name: 'Hakket oksekød', quantity: '200g' },
-          { name: 'Bulgur', quantity: '80g' },
-          { name: 'Feta', quantity: '60g', note: 'smuldret' },
-          { name: 'Tomat', quantity: '2 stk', note: 'i små tern' },
-          { name: 'Agurk', quantity: '½ stk', note: 'i små tern' },
-          { name: 'Spidskommen', quantity: '1 tsk' },
-          { name: 'Paprika', quantity: '1 tsk' },
-          { name: 'Citronsaft', quantity: '1–2 tsk' },
-          { name: 'Extra virgin olivenolie', quantity: '1 spsk' },
-          { name: 'Salt og peber', quantity: 'efter smag' },
-        ],
-      },
-      large: {
-        nutrition: { kj: '3500', fat: '33', carbs: '78', protein: '52', fiber: '8' },
-        ingredients: [
-          { name: 'Hakket oksekød', quantity: '400g' },
-          { name: 'Bulgur', quantity: '150g' },
-          { name: 'Feta', quantity: '100g', note: 'smuldret' },
-          { name: 'Tomat', quantity: '3 stk', note: 'i små tern' },
-          { name: 'Agurk', quantity: '1 stk', note: 'i små tern' },
-          { name: 'Spidskommen', quantity: '1,5 tsk' },
-          { name: 'Paprika', quantity: '1,5 tsk' },
-          { name: 'Citronsaft', quantity: '1–2 tsk' },
-          { name: 'Extra virgin olivenolie', quantity: '1 spsk' },
-          { name: 'Salt og peber', quantity: 'efter smag' },
-        ],
-      },
-      combined: {
-        nutrition: { kj: '2000 / 3500', fat: '19 / 33', carbs: '44 / 78', protein: '30 / 52', fiber: '5 / 8' },
-        ingredients: [
-          { name: 'Hakket oksekød', quantity: '300g' },
-          { name: 'Bulgur', quantity: '115g' },
-          { name: 'Feta', quantity: '80g', note: 'smuldret' },
-          { name: 'Tomat', quantity: '2–3 stk', note: 'i små tern' },
-          { name: 'Agurk', quantity: '1 stk', note: 'i små tern' },
-          { name: 'Spidskommen', quantity: '1 tsk' },
-          { name: 'Paprika', quantity: '1 tsk' },
-          { name: 'Citronsaft', quantity: '1–2 tsk' },
-          { name: 'Extra virgin olivenolie', quantity: '1 spsk' },
-          { name: 'Salt og peber', quantity: 'efter smag' },
-        ],
-      },
-    },
+    baseNutrition: { fat: 19, carbs: 44, protein: 30, fiber: 5 },
+    baseIngredients: [
+      { name: 'Hakket oksekød', amount: 200, unit: 'g', scales: true, isMeat: true },
+      { name: 'Bulgur', amount: 80, unit: 'g', scales: true },
+      { name: 'Feta', amount: 60, unit: 'g', scales: true, note: 'smuldret' },
+      { name: 'Tomat', amount: 2, unit: 'stk', scales: true, note: 'i små tern' },
+      { name: 'Agurk', amount: 0.5, unit: 'stk', scales: true, note: 'i små tern' },
+      { name: 'Spidskommen', amount: 1, unit: 'tsk', scales: false },
+      { name: 'Paprika', amount: 1, unit: 'tsk', scales: false },
+      { name: 'Citronsaft', quantityText: '1–2 tsk', scales: false },
+      { name: 'Extra virgin olivenolie', amount: 1, unit: 'spsk', scales: false },
+      { name: 'Salt og peber', quantityText: 'efter smag', scales: false },
+    ],
     steps: [
       { text: 'Kom bulguren i en skål eller gryde, og tilbered den efter pakkens anvisning. De fleste typer skal bare overhældes med kogende vand og stå tildækket i 10–12 minutter. Når den er færdig, løsner du den med en gaffel.' },
       { text: 'Imens varmer du en stor pande op på middel varme. Tilsæt olivenolien. Når olien ser blank ud, tilsætter du oksekødet. Lad det stege ca. 1 minut uden at røre for meget. Bryd det derefter i mindre stykker og steg videre 3–4 minutter, til det ikke længere er rødt og har fået lidt brun farve nogle steder.' },
@@ -427,63 +376,27 @@ export const RECIPES: Recipe[] = [
     ],
   },
 
-  // ─── MINCED-VEAL-PORK: Original ───
+  // ═══ MINCED-VEAL-PORK ═══
   {
     meatFamily: 'minced-veal-pork',
     title: 'Tortilla wraps med krydret kød',
     subtitle: 'Spidskål, tomat, agurk og yoghurt-dressing · 2 personer',
     time: '15–20 min',
     servings: 2,
-    portions: {
-      small: {
-        nutrition: { kj: '2000', fat: '24', carbs: '37', protein: '30', fiber: '5' },
-        ingredients: [
-          { name: 'Hakket kalv/flæsk', quantity: '250g', note: 'tilbud' },
-          { name: 'Tortilla wraps', quantity: '2 stk' },
-          { name: 'Spidskål', quantity: '200g', note: 'fintsnittet' },
-          { name: 'Tomat', quantity: '1 stk', note: 'i små tern' },
-          { name: 'Agurk', quantity: '1 stk', note: 'i tynde skiver eller små tern' },
-          { name: 'Yoghurt', quantity: '2 spsk' },
-          { name: 'Spidskommen', quantity: '1 tsk' },
-          { name: 'Paprika', quantity: '1 tsk' },
-          { name: 'Citron- eller limesaft', quantity: '1–2 tsk' },
-          { name: 'Extra virgin olivenolie', quantity: '1 spsk' },
-          { name: 'Salt og peber', quantity: 'efter smag' },
-        ],
-      },
-      large: {
-        nutrition: { kj: '3620', fat: '42', carbs: '64', protein: '52', fiber: '9' },
-        ingredients: [
-          { name: 'Hakket kalv/flæsk', quantity: '450g', note: 'tilbud' },
-          { name: 'Tortilla wraps', quantity: '4 stk' },
-          { name: 'Spidskål', quantity: '350g', note: 'fintsnittet' },
-          { name: 'Tomat', quantity: '3 stk', note: 'i små tern' },
-          { name: 'Agurk', quantity: '1 stk', note: 'i tynde skiver eller små tern' },
-          { name: 'Yoghurt', quantity: '4 spsk' },
-          { name: 'Spidskommen', quantity: '1,5 tsk' },
-          { name: 'Paprika', quantity: '1,5 tsk' },
-          { name: 'Citron- eller limesaft', quantity: '1–2 tsk' },
-          { name: 'Extra virgin olivenolie', quantity: '1 spsk' },
-          { name: 'Salt og peber', quantity: 'efter smag' },
-        ],
-      },
-      combined: {
-        nutrition: { kj: '2000 / 3620', fat: '24 / 42', carbs: '37 / 64', protein: '30 / 52', fiber: '5 / 9' },
-        ingredients: [
-          { name: 'Hakket kalv/flæsk', quantity: '350g', note: 'tilbud' },
-          { name: 'Tortilla wraps', quantity: '3 stk' },
-          { name: 'Spidskål', quantity: '275g', note: 'fintsnittet' },
-          { name: 'Tomat', quantity: '2 stk', note: 'i små tern' },
-          { name: 'Agurk', quantity: '1 stk', note: 'i tynde skiver eller små tern' },
-          { name: 'Yoghurt', quantity: '3 spsk' },
-          { name: 'Spidskommen', quantity: '1 tsk' },
-          { name: 'Paprika', quantity: '1 tsk' },
-          { name: 'Citron- eller limesaft', quantity: '1–2 tsk' },
-          { name: 'Extra virgin olivenolie', quantity: '1 spsk' },
-          { name: 'Salt og peber', quantity: 'efter smag' },
-        ],
-      },
-    },
+    baseNutrition: { fat: 24, carbs: 37, protein: 30, fiber: 5 },
+    baseIngredients: [
+      { name: 'Hakket kalv/flæsk', amount: 250, unit: 'g', scales: true, isMeat: true, note: 'tilbud' },
+      { name: 'Tortilla wraps', amount: 2, unit: 'stk', scales: true },
+      { name: 'Spidskål', amount: 200, unit: 'g', scales: true, note: 'fintsnittet' },
+      { name: 'Tomat', amount: 1, unit: 'stk', scales: true, note: 'i små tern' },
+      { name: 'Agurk', amount: 1, unit: 'stk', scales: false, note: 'i tynde skiver eller små tern' },
+      { name: 'Yoghurt', amount: 2, unit: 'spsk', scales: true },
+      { name: 'Spidskommen', amount: 1, unit: 'tsk', scales: false },
+      { name: 'Paprika', amount: 1, unit: 'tsk', scales: false },
+      { name: 'Citron- eller limesaft', quantityText: '1–2 tsk', scales: false },
+      { name: 'Extra virgin olivenolie', amount: 1, unit: 'spsk', scales: false },
+      { name: 'Salt og peber', quantityText: 'efter smag', scales: false },
+    ],
     steps: [
       { text: 'Snit spidskålen fint. Skær tomat og agurk ud. Bland yoghurt med citron- eller limesaft, lidt salt og lidt peber.' },
       { text: 'Varm en stor pande op på middel varme, tilsæt olivenolien, og kom kødet på panden. Lad det stege ca. 1 minut uden at røre for meget. Bryd det derefter i mindre stykker og steg videre 4–5 minutter, til det ikke længere er råt og har fået lidt brun farve nogle steder.' },
@@ -494,60 +407,25 @@ export const RECIPES: Recipe[] = [
     ],
   },
 
-  // ─── MINCED-VEAL-PORK: Feta variant ───
   {
     meatFamily: 'minced-veal-pork',
     title: 'Kødboller med feta og couscous',
     subtitle: 'Bagt feta i kødbollerne, tomat-agurk-salat · 2 personer',
     time: '25 min',
     servings: 2,
-    portions: {
-      small: {
-        nutrition: { kj: '2000', fat: '22', carbs: '40', protein: '32', fiber: '4' },
-        ingredients: [
-          { name: 'Hakket kalv/flæsk', quantity: '250g' },
-          { name: 'Couscous', quantity: '80g' },
-          { name: 'Feta', quantity: '60g', note: 'i små tern' },
-          { name: 'Tomat', quantity: '2 stk', note: 'i små tern' },
-          { name: 'Agurk', quantity: '½ stk', note: 'i små tern' },
-          { name: 'Spidskommen', quantity: '1 tsk' },
-          { name: 'Paprika', quantity: '1 tsk' },
-          { name: 'Citronsaft', quantity: '1–2 tsk' },
-          { name: 'Extra virgin olivenolie', quantity: '1 spsk' },
-          { name: 'Salt og peber', quantity: 'efter smag' },
-        ],
-      },
-      large: {
-        nutrition: { kj: '3500', fat: '40', carbs: '70', protein: '54', fiber: '7' },
-        ingredients: [
-          { name: 'Hakket kalv/flæsk', quantity: '450g' },
-          { name: 'Couscous', quantity: '150g' },
-          { name: 'Feta', quantity: '100g', note: 'i små tern' },
-          { name: 'Tomat', quantity: '3 stk', note: 'i små tern' },
-          { name: 'Agurk', quantity: '1 stk', note: 'i små tern' },
-          { name: 'Spidskommen', quantity: '1,5 tsk' },
-          { name: 'Paprika', quantity: '1,5 tsk' },
-          { name: 'Citronsaft', quantity: '1–2 tsk' },
-          { name: 'Extra virgin olivenolie', quantity: '1 spsk' },
-          { name: 'Salt og peber', quantity: 'efter smag' },
-        ],
-      },
-      combined: {
-        nutrition: { kj: '2000 / 3500', fat: '22 / 40', carbs: '40 / 70', protein: '32 / 54', fiber: '4 / 7' },
-        ingredients: [
-          { name: 'Hakket kalv/flæsk', quantity: '350g' },
-          { name: 'Couscous', quantity: '115g' },
-          { name: 'Feta', quantity: '80g', note: 'i små tern' },
-          { name: 'Tomat', quantity: '2–3 stk', note: 'i små tern' },
-          { name: 'Agurk', quantity: '1 stk', note: 'i små tern' },
-          { name: 'Spidskommen', quantity: '1 tsk' },
-          { name: 'Paprika', quantity: '1 tsk' },
-          { name: 'Citronsaft', quantity: '1–2 tsk' },
-          { name: 'Extra virgin olivenolie', quantity: '1 spsk' },
-          { name: 'Salt og peber', quantity: 'efter smag' },
-        ],
-      },
-    },
+    baseNutrition: { fat: 22, carbs: 40, protein: 32, fiber: 4 },
+    baseIngredients: [
+      { name: 'Hakket kalv/flæsk', amount: 250, unit: 'g', scales: true, isMeat: true },
+      { name: 'Couscous', amount: 80, unit: 'g', scales: true },
+      { name: 'Feta', amount: 60, unit: 'g', scales: true, note: 'i små tern' },
+      { name: 'Tomat', amount: 2, unit: 'stk', scales: true, note: 'i små tern' },
+      { name: 'Agurk', amount: 0.5, unit: 'stk', scales: true, note: 'i små tern' },
+      { name: 'Spidskommen', amount: 1, unit: 'tsk', scales: false },
+      { name: 'Paprika', amount: 1, unit: 'tsk', scales: false },
+      { name: 'Citronsaft', quantityText: '1–2 tsk', scales: false },
+      { name: 'Extra virgin olivenolie', amount: 1, unit: 'spsk', scales: false },
+      { name: 'Salt og peber', quantityText: 'efter smag', scales: false },
+    ],
     steps: [
       { text: 'Kom couscous i en skål. Hæld samme mængde kogende vand over som mængden af couscous, dæk til, og lad den stå i 5 minutter. Løsn den derefter med en gaffel.' },
       { text: 'Kom kødet i en skål. Tilsæt spidskommen, paprika, lidt salt og peber, og bland det kort sammen.' },

@@ -7,20 +7,13 @@ import { searchMeals } from '@/lib/meal-search-api';
 import type { MealSearchRequest, MealSearchResponse } from '@/types/meal-optimizer-types';
 import { MealResultsView } from '@/components/meal-results-view';
 
-const PORTION_LABELS: Record<string, string> = {
-  small: 'Lille portion',
-  medium: 'Medium',
-  large: 'Stor portion',
-  combined: 'Lille + stor portion',
-};
-
 function SearchSummaryBanner({ request }: { request: MealSearchRequest }) {
   return (
     <header className="summary-bar summary-bar-compact">
       <div>
         <p className="summary-address-sm">{request.address}</p>
         <p className="summary-subline-sm">
-          {PORTION_LABELS[request.portionSize] || 'Medium'} portion
+          {request.portionSize} kJ pr. portion
         </p>
       </div>
       <Link className="secondary-button link-button section-back-link" href="/">

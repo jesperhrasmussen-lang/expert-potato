@@ -4,6 +4,9 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 import type { PortionSize } from '@/types/meal-optimizer-types';
+import { getAverageMeatGramsAtKj, type Kj } from '@/lib/recipes';
+
+const VALID_KJ: PortionSize[] = ['2000', '2500', '3000', '3500', '4000'];
 
 const STORAGE_KEY = 'meal-search-prefs';
 
@@ -113,7 +116,7 @@ export function MealSearchForm() {
   const router = useRouter();
 
   const [address, setAddress] = useState('');
-  const [portionSize, setPortionSize] = useState<PortionSize>('small');
+  const [portionSize, setPortionSize] = useState<PortionSize>('2000');
   const [organicOnly, setOrganicOnly] = useState(false);
   const [saveOnDevice, setSaveOnDevice] = useState(false);
   const [locating, setLocating] = useState(false);
@@ -128,7 +131,9 @@ export function MealSearchForm() {
     const prefs = loadPrefs();
     if (prefs) {
       setAddress(prefs.address);
-      setPortionSize(prefs.portionSize);
+      // Migration: old stored values like 'small' default to '2000'
+      const validKj = VALID_KJ.includes(prefs.portionSize) ? prefs.portionSize : '2000';
+      setPortionSize(validKj);
       setOrganicOnly(prefs.organicOnly ?? false);
       setSaveOnDevice(true);
     }
@@ -306,29 +311,20 @@ export function MealSearchForm() {
       <div className="toggle-stack">
         <div className="toggle-group">
           <span className="toggle-label">Måltidsstørrelse i opskrifterne</span>
-          <div className="toggle-control">
-            <button
-              type="button"
-              className={`toggle-btn ${portionSize === 'small' ? 'toggle-active' : ''}`}
-              onClick={() => setPortionSize('small')}
-            >
-              2 x 2000 kJ
-            </button>
-            <button
-              type="button"
-              className={`toggle-btn ${portionSize === 'large' ? 'toggle-active' : ''}`}
-              onClick={() => setPortionSize('large')}
-            >
-              2 x 3500 kJ
-            </button>
+          <input
+            type="range"
+            min={2000}
+            max={4000}
+            step={500}
+            value={Number(portionSize)}
+            onChange={(e) => setPortionSize(e.target.value as PortionSize)}
+            className="kj-slider"
+            aria-label="Måltidsstørrelse i kJ"
+          />
+          <div className="kj-readout">
+            <div className="kj-readout-main">{portionSize} kJ</div>
+            <div className="kj-readout-sub">~{getAverageMeatGramsAtKj(Number(portionSize) as Kj)}g kød pr. portion</div>
           </div>
-          <button
-            type="button"
-            className={`toggle-btn toggle-btn-wide ${portionSize === 'combined' ? 'toggle-active' : ''}`}
-            onClick={() => setPortionSize('combined')}
-          >
-            2000 kJ + 3500 kJ
-          </button>
         </div>
 
         <div className="toggle-group toggle-group-spaced">

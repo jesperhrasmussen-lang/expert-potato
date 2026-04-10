@@ -3,7 +3,7 @@ export type AccessMode = 'radius' | 'walk' | 'transit';
 export type IngredientCategory = 'meat' | 'vegetable' | 'dairy';
 export type SlotRole = 'protein' | 'vegetable' | 'dairy' | 'other';
 export type QuantityUnit = 'g' | 'kg' | 'ml' | 'dl' | 'piece';
-export type PortionSize = 'small' | 'medium' | 'large' | 'combined';
+export type PortionSize = '2000' | '2500' | '3000' | '3500' | '4000';
 export type SauceType = 'cream' | 'asian' | 'tomato';
 
 export interface PantryItem {

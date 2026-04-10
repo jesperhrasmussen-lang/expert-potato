@@ -18,11 +18,15 @@ const VPS_API_URL = process.env.VPS_API_URL || 'http://187.124.179.86:8081';
 const DEFAULT_CHAIN_DISTANCE_RADIUS_KM = 20;
 const RESULT_LIMIT = 10;
 
+// PortionSize is a kJ value as string. The backend doesn't actually use this for
+// finding offers — meat amounts come from the recipe data on the frontend.
+// Multipliers here are unused but kept for type compatibility.
 const PORTION_MULTIPLIERS: Record<PortionSize, { meat: number; vegetable: number }> = {
-  small:    { meat: 125 / 150, vegetable: 250 / 300 },
-  medium:   { meat: 1,         vegetable: 1 },
-  large:    { meat: 210 / 150, vegetable: 400 / 300 },
-  combined: { meat: 1,         vegetable: 1 },
+  '2000': { meat: 1, vegetable: 1 },
+  '2500': { meat: 1, vegetable: 1 },
+  '3000': { meat: 1, vegetable: 1 },
+  '3500': { meat: 1, vegetable: 1 },
+  '4000': { meat: 1, vegetable: 1 },
 };
 const PIECE_GRAMS_ASSUMPTIONS: Record<string, number> = {};
 
@@ -78,7 +82,7 @@ const ESTIMATED_PRICE_MARKUP = 1.2;
 
 export async function executeMealSearch(request: MealSearchRequest): Promise<MealSearchResponse> {
   const catalog = loadMealCatalog();
-  const portionSize = request.portionSize || 'medium';
+  const portionSize = request.portionSize || '2000';
   const payload = await fetchFromVpsApi(request);
   const stores = buildStores(payload.places, payload.offers);
   const activeOffers = payload.offers.filter((offer) => offer.offerState === 'active');
@@ -254,7 +258,7 @@ function resolveSlotChoices(
   offers: RawOffer[],
   ingredientFamilyById: Map<string, IngredientFamily>,
   storesByChainId: Map<string, StoreOption>,
-  portionSize: PortionSize = 'medium',
+  portionSize: PortionSize = '2000',
   fallbackStore?: StoreOption,
 ) {
   return slot.allowedFamilies.flatMap((allowed) => {

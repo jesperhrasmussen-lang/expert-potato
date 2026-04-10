@@ -4,27 +4,19 @@ import Link from 'next/link';
 import { useState } from 'react';
 
 import type { MeatDeal, MealCandidate, MealSearchResponse, PortionSize } from '@/types/meal-optimizer-types';
-import { getRecipesForMeat } from '@/lib/recipes';
-import type { Recipe, SizeKey, Nutrition } from '@/lib/recipes';
+import { getRecipesForMeat, getPortionForKj, getMeatGramsAtKj } from '@/lib/recipes';
+import type { Recipe, Kj, Nutrition } from '@/lib/recipes';
 
 function formatDistance(meters: number) {
   return `${meters} meter`;
 }
-
-// Meat grams needed per recipe batch (2 servings), by portion size
-const MEAT_GRAMS_PER_BATCH: Record<string, Record<SizeKey, number>> = {
-  'chicken-fillet':   { small: 200, large: 350, combined: 275 },
-  'minced-pork':      { small: 250, large: 450, combined: 350 },
-  'minced-beef':      { small: 200, large: 400, combined: 300 },
-  'minced-veal-pork': { small: 250, large: 450, combined: 350 },
-};
 
 interface ExtendedDeal extends MeatDeal {
   servings: number;
   pricePerMeal: number;
 }
 
-function extractBestDeals(candidates: MealCandidate[], sizeKey: SizeKey): ExtendedDeal[] {
+function extractBestDeals(candidates: MealCandidate[], kj: Kj): ExtendedDeal[] {
   const bestByMeat = new Map<string, ExtendedDeal>();
 
   for (const c of candidates) {
@@ -33,7 +25,8 @@ function extractBestDeals(candidates: MealCandidate[], sizeKey: SizeKey): Extend
     );
     if (!meatLine) continue;
 
-    const meatPerBatch = MEAT_GRAMS_PER_BATCH[meatLine.ingredientFamilyId]?.[sizeKey] || 300;
+    const recipes = getRecipesForMeat(meatLine.ingredientFamilyId);
+    const meatPerBatch = recipes[0] ? getMeatGramsAtKj(recipes[0], kj) : 250;
     const meatCost = (meatPerBatch / meatLine.packageQuantity) * meatLine.packagePriceDkk;
     const pricePerMeal = Math.round(meatCost / 2);
 
@@ -61,7 +54,7 @@ function extractBestDeals(candidates: MealCandidate[], sizeKey: SizeKey): Extend
 
 type CardState = 'collapsed' | 'choosing' | 'viewing';
 
-function DealCard({ deal, rank, organicOnly, sizeKey }: { deal: ExtendedDeal; rank: number; organicOnly?: boolean; sizeKey: SizeKey }) {
+function DealCard({ deal, rank, organicOnly, kj }: { deal: ExtendedDeal; rank: number; organicOnly?: boolean; kj: Kj }) {
   const [state, setState] = useState<CardState>('collapsed');
   const [selectedIdx, setSelectedIdx] = useState(0);
   const recipes = getRecipesForMeat(deal.meatFamilyId);
@@ -128,7 +121,7 @@ function DealCard({ deal, rank, organicOnly, sizeKey }: { deal: ExtendedDeal; ra
           >
             Tilbage til resultaterne
           </button>
-          <RecipeDetail recipe={recipes[selectedIdx]} sizeKey={sizeKey} />
+          <RecipeDetail recipe={recipes[selectedIdx]} kj={kj} />
         </>
       )}
     </article>
@@ -148,9 +141,8 @@ function NutritionBar({ label, nutrition }: { label: string; nutrition: Nutritio
   );
 }
 
-function RecipeDetail({ recipe, sizeKey }: { recipe: Recipe; sizeKey: SizeKey }) {
-  const variant = recipe.portions[sizeKey];
-  const isCombined = sizeKey === 'combined';
+function RecipeDetail({ recipe, kj }: { recipe: Recipe; kj: Kj }) {
+  const variant = getPortionForKj(recipe, kj);
 
   return (
     <div className="meal-card-detail">
@@ -159,14 +151,7 @@ function RecipeDetail({ recipe, sizeKey }: { recipe: Recipe; sizeKey: SizeKey })
         <p className="recipe-subtitle">{recipe.subtitle} · {recipe.time}</p>
       </div>
 
-      {isCombined ? (
-        <div className="nutrition-stack">
-          <NutritionBar label="Lille portion:" nutrition={recipe.portions.small.nutrition} />
-          <NutritionBar label="Stor portion:" nutrition={recipe.portions.large.nutrition} />
-        </div>
-      ) : (
-        <NutritionBar label="Pr. portion:" nutrition={variant.nutrition} />
-      )}
+      <NutritionBar label="Pr. portion:" nutrition={variant.nutrition} />
 
       <div className="recipe-section">
         <span className="meal-card-pantry-label">Ingredienser</span>
@@ -215,8 +200,8 @@ function EmptyState() {
 }
 
 export function MealResultsView({ data, organicOnly, portionSize }: { data: MealSearchResponse; organicOnly?: boolean; portionSize?: PortionSize }) {
-  const sizeKey: SizeKey = portionSize === 'large' ? 'large' : portionSize === 'combined' ? 'combined' : 'small';
-  const deals = extractBestDeals(data.candidates, sizeKey);
+  const kj = (Number(portionSize) || 2000) as Kj;
+  const deals = extractBestDeals(data.candidates, kj);
 
   return (
     <div className="results-layout">
@@ -228,7 +213,7 @@ export function MealResultsView({ data, organicOnly, portionSize }: { data: Meal
           </div>
           <div className="stack-list">
             {deals.map((deal, i) => (
-              <DealCard key={deal.meatFamilyId} deal={deal} rank={i + 1} organicOnly={organicOnly} sizeKey={sizeKey} />
+              <DealCard key={deal.meatFamilyId} deal={deal} rank={i + 1} organicOnly={organicOnly} kj={kj} />
             ))}
           </div>
         </section>
